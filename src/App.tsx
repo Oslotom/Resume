@@ -46,19 +46,22 @@ function EditableText({ value, onSave, isEditing, className = "", multiline = fa
   );
 }
 
+interface ExperienceItemProps {
+  key?: any;
+  item: Experience;
+  isOpen: boolean;
+  onClick: () => void;
+  isEditing: boolean;
+  onUpdate: (updated: Experience) => void;
+}
+
 function ExperienceItem({ 
   item, 
   isOpen, 
   onClick, 
   isEditing, 
   onUpdate 
-}: { 
-  item: Experience, 
-  isOpen: boolean, 
-  onClick: () => void, 
-  isEditing: boolean,
-  onUpdate: (updated: Experience) => void
-}) {
+}: ExperienceItemProps) {
   return (
     <div className="border-b border-gray-100 last:border-0">
       <div className="flex items-start">
@@ -347,7 +350,7 @@ export default function App() {
         {/* Skills Section */}
         <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           <div className="md:col-span-4">
-            <h2 className="text-xs uppercase font-bold tracking-widest text-accent mb-4">Ferdigheter</h2>
+            <h2 className="text-xs uppercase font-bold tracking-widest text-accent mb-4">1Ferdigheter</h2>
           </div>
           <div className="md:col-span-8">
             <div className="flex flex-wrap gap-2">
@@ -374,7 +377,7 @@ export default function App() {
         {/* Education Section */}
         <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           <div className="md:col-span-4">
-            <h2 className="text-xs uppercase font-bold tracking-widest text-accent mb-4">1Utdannelse</h2>
+            <h2 className="text-xs uppercase font-bold tracking-widest text-accent mb-4">Utdannelse</h2>
           </div>
           <div className="md:col-span-8 space-y-8">
             {data.education.map((edu, idx) => (
