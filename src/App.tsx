@@ -140,7 +140,7 @@ export default function App() {
     return saved ? JSON.parse(saved) : initialData;
   });
   const [profileImg, setProfileImg] = useState(() => {
-    return localStorage.getItem('profile_img') || "https://media.licdn.com/dms/image/v2/C4D03AQE_E0_E0_E0_E0/profile-displayphoto-shrink_800_800/0/1516231234567?e=1723680000&v=beta&t=example";
+    return localStorage.getItem('profile_img') || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2670&auto=format&fit=crop";
   });
   const [isEditing, setIsEditing] = useState(false);
   const [openId, setOpenId] = useState<string | null>(data.experience[0]?.id || null);
@@ -154,7 +154,7 @@ export default function App() {
   const handleReset = () => {
     if (confirm("Er du sikker på at du vil tilbakestille alle endringer?")) {
       setData(initialData);
-      setProfileImg("https://media.licdn.com/dms/image/v2/C4D03AQE_E0_E0_E0_E0/profile-displayphoto-shrink_800_800/0/1516231234567?e=1723680000&v=beta&t=example");
+      setProfileImg("https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2670&auto=format&fit=crop");
       localStorage.removeItem('cv_data');
       localStorage.removeItem('profile_img');
     }
@@ -350,7 +350,7 @@ export default function App() {
         {/* Skills Section */}
         <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           <div className="md:col-span-4">
-            <h2 className="text-xs uppercase font-bold tracking-widest text-accent mb-4">1Ferdigheter</h2>
+            <h2 className="text-xs uppercase font-bold tracking-widest text-accent mb-4">2Ferdigheter</h2>
           </div>
           <div className="md:col-span-8">
             <div className="flex flex-wrap gap-2">
