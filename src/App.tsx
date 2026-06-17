@@ -377,7 +377,7 @@ export default function App() {
         {/* Education Section */}
         <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           <div className="md:col-span-4">
-            <h2 className="text-xs uppercase font-bold tracking-widest text-accent mb-4">Utdannelse</h2>
+            <h2 className="text-xs uppercase font-bold tracking-widest text-accent mb-4">Utdannelsen</h2>
           </div>
           <div className="md:col-span-8 space-y-8">
             {data.education.map((edu, idx) => (
