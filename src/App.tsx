@@ -296,7 +296,7 @@ export default function App() {
                     Klikk på en hvilken som helst seksjon i CV-en til høyre for å begynne redigering.
                   </p>
                   <ul className="text-[10px] text-indigo-600/70 space-y-1">
-                    <li className="flex items-center gap-2 font-medium"><ChevronRight size={10} /> Sanntids-oppdatering</li>
+                    <li className="flex items-center gap-2 font-medium"><ChevronRight size={10} /> Sanntids-1oppdatering</li>
                     <li className="flex items-center gap-2 font-medium"><ChevronRight size={10} /> Automatisk layout</li>
                   </ul>
                 </div>
