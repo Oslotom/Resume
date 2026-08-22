@@ -293,7 +293,7 @@ export default function App() {
                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Instruksjoner</h3>
                 <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-3">
                   <p className="text-xs text-indigo-900 font-medium leading-relaxed">
-                    Klikk på en hvilken som helst seksjon i CV-en til høyre for å begynne redigering.
+                    1Klikk på en hvilken som helst seksjon i CV-en til høyre for å begynne redigering.
                   </p>
                   <ul className="text-[10px] text-indigo-600/70 space-y-1">
                     <li className="flex items-center gap-2 font-medium"><ChevronRight size={10} /> Sanntids-1oppdatering</li>
