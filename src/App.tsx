@@ -173,7 +173,7 @@ export default function App() {
                 )}
               >
                 <History size={14} />
-                Versjoner
+                Versjoner22
               </button>
             </div>
           </div>
