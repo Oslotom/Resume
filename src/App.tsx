@@ -190,7 +190,7 @@ export default function App() {
         {/* Sidebar */}
         <aside className="print:hidden w-80 bg-slate-50 border-r border-slate-200 flex flex-col shrink-0">
           <div className="p-6 border-b border-slate-200 flex flex-col gap-4">
-            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Kontrollpanel</h2>
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Kontrollpanel1</h2>
             <div className="flex gap-2">
               <button 
                 onClick={() => setActiveTab('preview')}
