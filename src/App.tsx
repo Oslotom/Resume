@@ -143,7 +143,7 @@ export default function App() {
             className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full text-sm font-medium hover:border-indigo-200 hover:text-indigo-600 transition-all active:scale-95"
           >
             <Download size={16} />
-            Last ned som PDF
+            Last ned som PDF1
           </button>
 
           {user ? (
