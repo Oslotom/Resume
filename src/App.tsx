@@ -285,7 +285,7 @@ export default function App() {
                     className="w-full py-3 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:border-indigo-200 hover:text-indigo-600 transition-all flex items-center justify-center gap-2"
                   >
                     <Layout size={16} />
-                    Juster kolonnebredde
+                    Juster kolonnebredde1
                   </button>
                 </div>
 
