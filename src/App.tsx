@@ -1,448 +1,358 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Briefcase, 
-  GraduationCap, 
-  Mail, 
-  Linkedin, 
-  Phone, 
-  ChevronDown, 
-  MapPin, 
-  Zap,
-  Globe,
-  Edit2,
-  Check,
-  Image as ImageIcon,
-  RotateCcw
+import {
+  Plus,
+  History,
+  Save,
+  LogOut,
+  LogIn,
+  ChevronRight,
+  FileText,
+  Trash2,
+  Clock,
+  Layout,
+  Download
 } from 'lucide-react';
-import { cvData as initialData } from './data';
-import { Experience, CVData } from './types';
-
-interface EditableTextProps {
-  value: string;
-  onSave: (val: string) => void;
-  isEditing: boolean;
-  className?: string;
-  multiline?: boolean;
-}
-
-function EditableText({ value, onSave, isEditing, className = "", multiline = false }: EditableTextProps) {
-  if (!isEditing) return <span className={className}>{value}</span>;
-
-  return multiline ? (
-    <textarea
-      className={`w-full p-2 border border-accent/20 rounded bg-accent/5 focus:outline-none focus:ring-1 focus:ring-accent ${className}`}
-      value={value}
-      onChange={(e) => onSave(e.target.value)}
-      rows={4}
-    />
-  ) : (
-    <input
-      type="text"
-      className={`w-full p-1 border border-accent/20 rounded bg-accent/5 focus:outline-none focus:ring-1 focus:ring-accent ${className}`}
-      value={value}
-      onChange={(e) => onSave(e.target.value)}
-    />
-  );
-}
-
-interface ExperienceItemProps {
-  key?: any;
-  item: Experience;
-  isOpen: boolean;
-  onClick: () => void;
-  isEditing: boolean;
-  onUpdate: (updated: Experience) => void;
-}
-
-function ExperienceItem({ 
-  item, 
-  isOpen, 
-  onClick, 
-  isEditing, 
-  onUpdate 
-}: ExperienceItemProps) {
-  return (
-    <div className="border-b border-gray-100 last:border-0">
-      <div className="flex items-start">
-        <button 
-          onClick={onClick}
-          className="flex-1 text-left py-6 flex items-start justify-between group focus:outline-none"
-        >
-          <div className="flex-1">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-1">
-              <h3 className="text-xl font-semibold text-brand-primary group-hover:text-accent transition-colors">
-                <EditableText 
-                  value={item.role} 
-                  isEditing={isEditing} 
-                  onSave={(val) => onUpdate({ ...item, role: val })} 
-                />
-              </h3>
-              <span className="text-sm font-medium text-gray-500 md:text-right">
-                <EditableText 
-                  value={item.period} 
-                  isEditing={isEditing} 
-                  onSave={(val) => onUpdate({ ...item, period: val })} 
-                />
-              </span>
-            </div>
-            <div className="text-brand-secondary font-medium flex items-center gap-2">
-              <EditableText 
-                value={item.company} 
-                isEditing={isEditing} 
-                onSave={(val) => onUpdate({ ...item, company: val })} 
-              />
-            </div>
-          </div>
-          <div className={`mt-1 ml-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
-            <ChevronDown className="w-5 h-5 text-gray-300" />
-          </div>
-        </button>
-      </div>
-      
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="overflow-hidden"
-          >
-            <div className="pb-8 pl-4 border-l-2 border-gray-100 ml-1">
-              <ul className="space-y-3">
-                {item.description.map((point, idx) => (
-                  <li key={idx} className="text-gray-600 leading-relaxed relative pl-4">
-                    <span className="absolute left-0 top-2.5 w-1.5 h-1.5 rounded-full bg-accent/30" />
-                    <EditableText 
-                      value={point} 
-                      isEditing={isEditing} 
-                      onSave={(val) => {
-                        const newDesc = [...item.description];
-                        newDesc[idx] = val;
-                        onUpdate({ ...item, description: newDesc });
-                      }} 
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
+import { onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
+import { auth, signIn, signOut, saveCVVersion, updateCVVersion, deleteCVVersion, db } from './lib/firebase';
+import { CVData, CVVersion } from './types';
+import { initialCVData } from './initialData';
+import CVPreview from './components/CVPreview';
+import CVEditor from './components/CVEditor';
+import { cn } from './lib/utils';
 
 export default function App() {
-  const [data, setData] = useState<CVData>(() => {
-    const saved = localStorage.getItem('cv_data');
-    return saved ? JSON.parse(saved) : initialData;
-  });
-  const [profileImg, setProfileImg] = useState(() => {
-    return localStorage.getItem('profile_img') || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2670&auto=format&fit=crop";
-  });
-  const [isEditing, setIsEditing] = useState(false);
-  const [openId, setOpenId] = useState<string | null>(data.experience[0]?.id || null);
+  const [user, setUser] = useState(auth.currentUser);
+  const [versions, setVersions] = useState<CVVersion[]>([]);
+  const [currentVersion, setCurrentVersion] = useState<CVVersion | null>(null);
+  const [cvData, setCvData] = useState<CVData>(initialCVData);
+  const [editingSection, setEditingSection] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'preview' | 'versions'>('preview');
+  const [highlightSetting, setHighlightSetting] = useState<string | null>(null);
 
-  // Persistence effect
   useEffect(() => {
-    localStorage.setItem('cv_data', JSON.stringify(data));
-    localStorage.setItem('profile_img', profileImg);
-  }, [data, profileImg]);
+    const unsubscribe = auth.onAuthStateChanged((u) => {
+      setUser(u);
+      if (!u) {
+        setVersions([]);
+        setCurrentVersion(null);
+        setCvData(initialCVData);
+      }
+    });
+    return unsubscribe;
+  }, []);
 
-  const handleReset = () => {
-    if (confirm("Er du sikker på at du vil tilbakestille alle endringer?")) {
-      setData(initialData);
-      setProfileImg("https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2670&auto=format&fit=crop");
-      localStorage.removeItem('cv_data');
-      localStorage.removeItem('profile_img');
+  useEffect(() => {
+    if (!user) return;
+
+    const q = query(
+      collection(db, 'cv_versions'),
+      where('userId', '==', user.uid),
+      orderBy('updatedAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const v = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CVVersion));
+      setVersions(v);
+      
+      // If we don't have a current version yet, or it's not in the new list, pick the first one
+      if (v.length > 0 && !currentVersion) {
+        // Only auto-load if it's the first time
+        // setCurrentVersion(v[0]);
+        // setCvData(v[0].data);
+      }
+    });
+
+    return unsubscribe;
+  }, [user]);
+
+  const handleSaveAsNew = async () => {
+    if (!user) {
+      alert("Du må logge inn for å lagre versjoner.");
+      return;
+    }
+    const name = prompt("Navn på versjon (f.eks. 'Tech Focus'):");
+    if (!name) return;
+
+    setIsSaving(true);
+    try {
+      const res = await saveCVVersion(user.uid, name, cvData);
+      // Optional: automatically select the new version
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!currentVersion) {
+      handleSaveAsNew();
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await updateCVVersion(currentVersion.id, currentVersion.name, cvData);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSelectVersion = (v: CVVersion) => {
+    setCurrentVersion(v);
+    setCvData(v.data);
+    setActiveTab('preview');
+  };
+
+  const handleDownloadPdf = () => {
+    window.print();
+  };
+
+  const handleDelete = async (e: MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (confirm("Er du sikker på at du vil slette denne versjonen?")) {
+      await deleteCVVersion(id);
+      if (currentVersion?.id === id) {
+        setCurrentVersion(null);
+        setCvData(initialCVData);
+      }
     }
   };
 
   return (
-    <div className="min-h-screen selection:bg-blue-100">
-      {/* Navigation / Header Info Bar */}
-      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 py-4">
-        <div className="max-w-5xl mx-auto px-6 flex justify-between items-center">
-          <span className="font-display font-bold text-lg tracking-tight">
-            <EditableText 
-              value={data.name} 
-              isEditing={isEditing} 
-              onSave={(val) => setData({ ...data, name: val })} 
-            />
-          </span>
-          <div className="flex items-center gap-4 md:gap-8">
-            <div className="hidden md:flex items-center gap-6 text-sm text-gray-500">
-              <a href={`mailto:${data.contact.email}`} className="flex items-center gap-2 hover:text-accent transition-colors">
-                <Mail size={14} /> {data.contact.email}
-              </a>
-              <a href={`https://${data.contact.linkedin}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-accent transition-colors">
-                <Linkedin size={14} /> LinkedIn
-              </a>
-            </div>
-            <div className="flex gap-2">
-              {isEditing && (
-                <button 
-                  onClick={handleReset}
-                  className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                  title="Tilbakestill endringer"
-                >
-                  <RotateCcw size={18} />
-                </button>
-              )}
-              <button 
-                onClick={() => setIsEditing(!isEditing)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${
-                  isEditing 
-                  ? 'bg-green-500 text-white shadow-lg shadow-green-200 ring-2 ring-green-100' 
-                  : 'bg-brand-primary text-white hover:bg-black'
-                }`}
-              >
-                {isEditing ? <><Check size={16} /> Save</> : <><Edit2 size={16} /> Edit</>}
-              </button>
-            </div>
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+      {/* Navigation */}
+      <nav className="print:hidden h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-40">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">
+            C
           </div>
+          <h1 className="text-xl font-semibold text-slate-900 italic">
+            Curriculum<span className="text-indigo-600">Pro</span>
+          </h1>
+          {currentVersion && (
+            <span className="ml-4 px-3 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded-full uppercase tracking-widest border border-indigo-100">
+              {currentVersion.name}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleDownloadPdf}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full text-sm font-medium hover:border-indigo-200 hover:text-indigo-600 transition-all active:scale-95"
+          >
+            <Download size={16} />
+            Last ned som PDF
+          </button>
+
+          {user ? (
+            <>
+              <button
+                onClick={handleUpdate}
+                disabled={isSaving}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+              >
+                <Save size={16} />
+                {isSaving ? 'Lagrer...' : currentVersion ? 'Lagre endringer' : 'Lagre ny versjon'}
+              </button>
+              
+              <div className="h-8 w-[1px] bg-slate-200 mx-2" />
+              
+              <div className="flex items-center gap-3">
+                <img 
+                  src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`} 
+                  className="w-8 h-8 rounded-full border"
+                  alt="Avatar"
+                />
+                <button 
+                  onClick={signOut}
+                  className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                  title="Logg ut"
+                >
+                  <LogOut size={20} />
+                </button>
+              </div>
+            </>
+          ) : (
+            <button 
+              onClick={signIn}
+              className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
+            >
+              <LogIn size={16} />
+              Logg inn for å lagre
+            </button>
+          )}
         </div>
       </nav>
 
-      {/* Hero Banner */}
-      <header className="pt-32 pb-20 md:pt-48 md:pb-32 bg-white relative overflow-hidden text-left">
-        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-50" />
-        
-        <div className="max-w-5xl mx-auto px-6 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-12">
-              <div className="flex-1">
-                <span className="inline-block px-3 py-1 bg-blue-50 text-accent text-xs font-bold tracking-widest uppercase rounded-full mb-6">
-                  {data.name}
-                </span>
-                <h1 className="text-4xl md:text-7xl font-display font-medium text-brand-primary leading-[1.1] mb-8 max-w-2xl">
-                  <EditableText 
-                    value={data.title} 
-                    isEditing={isEditing} 
-                    onSave={(val) => setData({ ...data, title: val })} 
-                  />
-                </h1>
+      <main className="flex-1 flex overflow-hidden print:overflow-visible print:block">
+        {/* Sidebar */}
+        <aside className="print:hidden w-80 bg-slate-50 border-r border-slate-200 flex flex-col shrink-0">
+          <div className="p-6 border-b border-slate-200 flex flex-col gap-4">
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Kontrollpanel</h2>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setActiveTab('preview')}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all",
+                  activeTab === 'preview' ? "bg-white border border-slate-200 text-slate-900 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                )}
+              >
+                <Layout size={14} />
+                Preview
+              </button>
+              <button 
+                onClick={() => setActiveTab('versions')}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all",
+                  activeTab === 'versions' ? "bg-white border border-slate-200 text-slate-900 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                )}
+              >
+                <History size={14} />
+                Versjoner
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {activeTab === 'versions' ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lagrede versjoner</h3>
+                   <button 
+                    onClick={() => {
+                      setCurrentVersion(null);
+                      setCvData(initialCVData);
+                      setActiveTab('preview');
+                    }}
+                    className="p-1 hover:bg-white border border-transparent hover:border-slate-200 rounded text-indigo-600 transition-all"
+                    title="Ny mal"
+                   >
+                     <Plus size={16} />
+                   </button>
+                </div>
                 
-                <div className="flex flex-wrap gap-8 text-brand-secondary">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center">
-                      <MapPin size={18} />
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase font-bold tracking-tighter">Location</p>
-                      <p className="font-medium">
-                        <EditableText 
-                          value={data.contact.location} 
-                          isEditing={isEditing} 
-                          onSave={(val) => setData({ ...data, contact: { ...data.contact, location: val } })} 
+                {versions.length === 0 ? (
+                  <div className="text-center py-12 px-4 space-y-4">
+                    <History size={32} className="mx-auto text-slate-200" />
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Ingen lagrede versjoner.
+                    </p>
+                  </div>
+                ) : (
+                  versions.map((v) => (
+                    <button
+                      key={v.id}
+                      onClick={() => handleSelectVersion(v)}
+                      className={cn(
+                        "w-full text-left p-4 rounded-xl border transition-all group relative",
+                        currentVersion?.id === v.id 
+                          ? "bg-white border-indigo-200 shadow-md ring-2 ring-indigo-500/5" 
+                          : "bg-slate-100 border-transparent hover:bg-white hover:border-slate-200"
+                      )}
+                    >
+                      <div className="flex items-start justify-between mb-1">
+                        <span className={cn(
+                          "font-bold text-sm",
+                          currentVersion?.id === v.id ? "text-indigo-900" : "text-slate-600"
+                        )}>
+                          {v.name}
+                        </span>
+                        {currentVersion?.id === v.id && (
+                          <span className="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded uppercase font-bold">Aktiv</span>
+                        )}
+                        <Trash2 
+                          size={14} 
+                          className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity ml-2"
+                          onClick={(e) => handleDelete(e, v.id)}
                         />
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center">
-                      <Briefcase size={18} />
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase font-bold tracking-tighter">Status</p>
-                      <p className="font-medium tracking-tight">Active Product Professional</p>
-                    </div>
-                  </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-2">
+                        <Clock size={10} />
+                        <span>{v.updatedAt?.toDate().toLocaleDateString()}</span>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Layout</h3>
+                  <button 
+                    onClick={() => setEditingSection('settings')}
+                    className="w-full py-3 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:border-indigo-200 hover:text-indigo-600 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Layout size={16} />
+                    Juster kolonnebredde
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Instruksjoner</h3>
+                <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-3">
+                  <p className="text-xs text-indigo-900 font-medium leading-relaxed">
+                    Klikk på en hvilken som helst seksjon i CV-en til høyre for å begynne redigering.
+                  </p>
+                  <ul className="text-[10px] text-indigo-600/70 space-y-1">
+                    <li className="flex items-center gap-2 font-medium"><ChevronRight size={10} /> Sanntids-oppdatering</li>
+                    <li className="flex items-center gap-2 font-medium"><ChevronRight size={10} /> Automatisk layout</li>
+                  </ul>
                 </div>
               </div>
-
-              <div className="relative group">
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                >
-                  <div className={`w-64 h-64 md:w-80 md:h-80 rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 ${isEditing ? 'opacity-80 scale-95 ring-4 ring-accent' : 'rotate-3 hover:rotate-0'}`}>
-                    <img 
-                      src={profileImg} 
-                      alt={data.name}
-                      className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2670&auto=format&fit=crop";
-                      }}
-                    />
-                  </div>
-                </motion.div>
-                
-                {isEditing && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-xl pointer-events-auto border border-accent/20 w-full max-w-[240px]">
-                      <div className="flex items-center gap-2 mb-2 text-accent font-bold text-xs uppercase tracking-wider">
-                        <ImageIcon size={14} /> Edit Image URL
-                      </div>
-                      <input 
-                        type="text" 
-                        value={profileImg}
-                        onChange={(e) => setProfileImg(e.target.value)}
-                        className="w-full text-xs p-2 border border-gray-200 rounded focus:border-accent outline-none"
-                        placeholder="Paste image URL here..."
-                      />
-                    </div>
-                  </div>
-                )}
-                
-                <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-accent/10 rounded-full blur-2xl -z-10" />
-              </div>
             </div>
+          )}
+        </div>
+          
+          <div className="p-6 border-t border-slate-200 bg-slate-50">
+             <div className="p-4 bg-indigo-900 rounded-2xl text-white">
+                <p className="text-[10px] opacity-80 mb-2 uppercase tracking-widest font-bold">Lagringskapasitet</p>
+                <div className="w-full h-1.5 bg-indigo-800 rounded-full overflow-hidden">
+                  <div className="w-2/3 h-full bg-indigo-400"></div>
+                </div>
+                <p className="text-[10px] mt-2 opacity-60">{versions.length} / 20 versjoner brukt</p>
+             </div>
+          </div>
+        </aside>
+
+        {/* Content View */}
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-200/50 scroll-smooth flex justify-center print:overflow-visible print:h-auto print:p-0 print:bg-white print:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            className="w-full max-w-[900px] print:max-w-none"
+          >
+            <CVPreview
+              data={cvData}
+              onEditSection={(section) => setEditingSection(section)}
+              onUpdateData={(newData) => setCvData(newData)}
+              highlightSetting={highlightSetting}
+            />
           </motion.div>
         </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-6 pb-24 space-y-24">
-        
-        {/* Sammendrag Section */}
-        <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          <div className="md:col-span-4 translate-y-1">
-            <h2 className="text-xs uppercase font-bold tracking-widest text-accent mb-4">Sammendrag</h2>
-          </div>
-          <div className="md:col-span-8">
-            <div className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed">
-              <EditableText 
-                value={data.summary} 
-                isEditing={isEditing} 
-                onSave={(val) => setData({ ...data, summary: val })} 
-                multiline
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Experience Section */}
-        <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          <div className="md:col-span-4 sticky top-24">
-            <h2 className="text-xs uppercase font-bold tracking-widest text-accent mb-4">Erfaring</h2>
-            <p className="text-sm text-gray-400 max-w-[200px]">
-              {isEditing ? "Du er nå i redigeringsmodus." : "Klikk på en stilling for å se detaljer."}
-            </p>
-          </div>
-          <div className="md:col-span-8">
-            <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              {data.experience.map((item, idx) => (
-                <ExperienceItem 
-                  key={item.id} 
-                  item={item} 
-                  isOpen={openId === item.id}
-                  isEditing={isEditing}
-                  onUpdate={(updated) => {
-                    const newExp = [...data.experience];
-                    newExp[idx] = updated;
-                    setData({ ...data, experience: newExp });
-                  }}
-                  onClick={() => !isEditing && setOpenId(openId === item.id ? null : item.id)}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Skills Section */}
-        <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          <div className="md:col-span-4">
-            <h2 className="text-xs uppercase font-bold tracking-widest text-accent mb-4">Ferdigheter</h2>
-          </div>
-          <div className="md:col-span-8">
-            <div className="flex flex-wrap gap-2">
-              {data.skills.map((skill, idx) => (
-                <span 
-                  key={idx} 
-                  className="px-4 py-2 bg-gray-100/50 text-brand-secondary rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
-                >
-                  <EditableText 
-                    value={skill} 
-                    isEditing={isEditing} 
-                    onSave={(val) => {
-                      const newSkills = [...data.skills];
-                      newSkills[idx] = val;
-                      setData({ ...data, skills: newSkills });
-                    }} 
-                  />
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Education Section */}
-        <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          <div className="md:col-span-4">
-            <h2 className="text-xs uppercase font-bold tracking-widest text-accent mb-4">Utdannelsen</h2>
-          </div>
-          <div className="md:col-span-8 space-y-8">
-            {data.education.map((edu, idx) => (
-              <div key={idx} className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-semibold text-lg">
-                    <EditableText 
-                      value={edu.degree} 
-                      isEditing={isEditing} 
-                      onSave={(val) => {
-                        const newEdu = [...data.education];
-                        newEdu[idx] = { ...edu, degree: val };
-                        setData({ ...data, education: newEdu });
-                      }} 
-                    />
-                  </h4>
-                  <p className="text-brand-secondary">
-                    <EditableText 
-                      value={edu.institution} 
-                      isEditing={isEditing} 
-                      onSave={(val) => {
-                        const newEdu = [...data.education];
-                        newEdu[idx] = { ...edu, institution: val };
-                        setData({ ...data, education: newEdu });
-                      }} 
-                    />
-                  </p>
-                </div>
-                <span className="text-sm font-mono text-gray-400">
-                  <EditableText 
-                    value={edu.year} 
-                    isEditing={isEditing} 
-                    onSave={(val) => {
-                      const newEdu = [...data.education];
-                      newEdu[idx] = { ...edu, year: val };
-                      setData({ ...data, education: newEdu });
-                    }} 
-                  />
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 py-16">
-        <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="text-center md:text-left">
-            <h3 className="font-display font-bold text-2xl mb-2">{data.name}</h3>
-            <p className="text-gray-400">Digital CV • {new Date().getFullYear()}</p>
-          </div>
-          <div className="flex gap-4">
-             <a href={`mailto:${data.contact.email}`} className="w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center hover:border-accent hover:text-accent transition-all">
-                <Mail size={20} />
-             </a>
-             <a href={`https://${data.contact.linkedin}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center hover:border-accent hover:text-accent transition-all">
-                <Linkedin size={20} />
-             </a>
-             <a href={`tel:${data.contact.phone.replace(/\s/g, '')}`} className="w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center hover:border-accent hover:text-accent transition-all">
-                <Phone size={20} />
-             </a>
-          </div>
-        </div>
-      </footer>
+      {/* Editor Modal */}
+      <AnimatePresence>
+        {editingSection && (
+          <CVEditor
+            section={editingSection}
+            data={cvData}
+            onClose={() => {
+              setEditingSection(null);
+              setHighlightSetting(null);
+            }}
+            onSave={(updated) => {
+              setCvData(updated);
+              setEditingSection(null);
+              setHighlightSetting(null);
+            }}
+            onHighlightSetting={setHighlightSetting}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

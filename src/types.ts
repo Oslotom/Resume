@@ -1,29 +1,71 @@
-export interface Experience {
-  id: string;
-  role: string;
-  company: string;
-  period: string;
-  location?: string;
-  description: string[];
+export interface ContactInfo {
+  location: string;
+  phone: string;
+  email: string;
 }
 
-export interface Education {
+export interface ExperienceItem {
+  id: string;
+  company: string;
+  location: string;
+  role: string;
+  period: string;
+  description: string;
+  bullets: string[];
+}
+
+export interface EducationItem {
+  id: string;
   degree: string;
-  institution: string;
-  year: string;
+  school: string;
+  period: string;
+  details: string;
+}
+
+export interface LanguageItem {
+  name: string;
+  level: string;
+}
+
+export interface ProjectItem {
+  id: string;
+  title: string;
+  client: string;
+  description: string;
 }
 
 export interface CVData {
-  name: string;
-  title: string;
-  contact: {
-    phone: string;
-    email: string;
-    linkedin: string;
-    location: string;
+  settings?: {
+    sidebarWidth?: number; // percentage
+    contentPadding?: number; // padding in px (base 64 for 16rem/p-16)
+    experienceWidth?: number; // width of the left company column in px
+    sidebarPadding?: number; // internal padding for dark sidebar
+    sectionSpacing?: number; // gap between major sections
+    itemSpacing?: number; // gap between jobs/projects
+    headerSpacing?: number; // margin above/below name and header
+    fieldPadding?: number; // padding on clickable/editable field sections
   };
-  summary: string;
-  experience: Experience[];
+  personal: {
+    name: string;
+    title: string;
+    subtitle: string;
+    summary: string;
+    profilePicture?: string;
+    contact: ContactInfo;
+  };
+  experience: ExperienceItem[];
+  education: EducationItem[];
   skills: string[];
-  education: Education[];
+  links: { label: string; url: string }[];
+  languages: LanguageItem[];
+  projects: ProjectItem[];
+}
+
+export interface CVVersion {
+  id: string;
+  userId: string;
+  name: string;
+  data: CVData;
+  createdAt: any;
+  updatedAt: any;
 }

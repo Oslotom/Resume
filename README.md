@@ -1,20 +1,39 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# CV Builder Pro - Local Development
 
-# Run and deploy your AI Studio app
+Dette prosjektet er klart for videre utvikling i Visual Studio Code. Det er bygget med **React 18**, **Vite**, **TypeScript**, og **Tailwind CSS**.
 
-This contains everything you need to run your app locally.
+## Slik kommer du i gang lokalt
 
-View your app in AI Studio: https://ai.studio/apps/c948c2ad-a797-4e2c-b5f3-549e24f75fe0
+### 1. Pakk ut og åpne i VS Code
+Last ned prosjektet som ZIP fra AI Studio (Innstillinger -> Last ned som ZIP) og åpne mappen i VS Code.
 
-## Run Locally
+### 2. Installer avhengigheter
+Åpne terminalen i VS Code (`Ctrl+``) og kjør:
+```bash
+npm install
+```
 
-**Prerequisites:**  Node.js
+### 3. Start utviklingsserveren
+Kjør følgende kommando for å starte appen lokalt:
+```bash
+npm run dev
+```
+Appen vil da være tilgjengelig på `http://localhost:3000` (eller den porten Vite tildeler).
 
+## Prosjektstruktur
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- `src/App.tsx`: Hovedkomponenten som styrer tilstanden.
+- `src/components/CVPreview.tsx`: Selve CV-visningen med det visuelle dra-og-slipp systemet.
+- `src/components/CVEditor.tsx`: Kontrollpanelet på venstre side.
+- `src/initialData.ts`: Inneholder all CV-data og standardinnstillinger.
+- `src/types.ts`: TypeScript-definisjoner for dataen.
+
+## Teknologier som brukes
+- **Styling**: Tailwind CSS
+- **Animasjoner**: Framer Motion (motion/react)
+- **Ikoner**: Lucide React
+- **Build Tool**: Vite
+
+## Tips for VS Code
+- Installer **Tailwind CSS IntelliSense** utvidelsen for bedre autfullføring av stiler.
+- Bruk **ESLint** og **Prettier** for å holde koden ryddig.

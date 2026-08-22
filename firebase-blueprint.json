@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "CVVersion": {
+      "title": "CV Version",
+      "description": "A specific version of a user's CV",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who owns this CV"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of this version",
+          "maxLength": 100
+        },
+        "data": {
+          "type": "object",
+          "description": "The full CV content structured data"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["userId", "name", "data", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/cv_versions/{versionId}": {
+      "schema": "CVVersion",
+      "description": "Stored CV versions for users"
+    }
+  }
+}
