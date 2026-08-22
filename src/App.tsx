@@ -237,7 +237,7 @@ export default function App() {
                   <div className="text-center py-12 px-4 space-y-4">
                     <History size={32} className="mx-auto text-slate-200" />
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      Ingen lagrede versjoner.
+                      Ingen lagrede versjoner1.
                     </p>
                   </div>
                 ) : (
