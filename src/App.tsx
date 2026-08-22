@@ -4,25 +4,28 @@ import {
   Plus,
   History,
   Save,
-  LogOut,
-  LogIn,
   ChevronRight,
-  FileText,
   Trash2,
   Clock,
   Layout,
   Download
 } from 'lucide-react';
-import { onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
-import { auth, signIn, signOut, saveCVVersion, updateCVVersion, deleteCVVersion, db } from './lib/firebase';
 import { CVData, CVVersion } from './types';
 import { initialCVData } from './initialData';
 import CVPreview from './components/CVPreview';
 import CVEditor from './components/CVEditor';
 import { cn } from './lib/utils';
 
+const VERSIONS_STORAGE_KEY = 'curriculum-pro-versions';
+
+const formatVersionDate = (timestamp: CVVersion['updatedAt']) => {
+  const date = typeof timestamp === 'number'
+    ? new Date(timestamp)
+    : timestamp?.toDate?.() || new Date();
+  return date.toLocaleDateString('nb-NO');
+};
+
 export default function App() {
-  const [user, setUser] = useState(auth.currentUser);
   const [versions, setVersions] = useState<CVVersion[]>([]);
   const [currentVersion, setCurrentVersion] = useState<CVVersion | null>(null);
   const [cvData, setCvData] = useState<CVData>(initialCVData);
@@ -32,59 +35,44 @@ export default function App() {
   const [highlightSetting, setHighlightSetting] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((u) => {
-      setUser(u);
-      if (!u) {
-        setVersions([]);
-        setCurrentVersion(null);
-        setCvData(initialCVData);
+    try {
+      const storedVersions = localStorage.getItem(VERSIONS_STORAGE_KEY);
+      if (storedVersions) {
+        setVersions(JSON.parse(storedVersions) as CVVersion[]);
       }
-    });
-    return unsubscribe;
+    } catch (error) {
+      console.error('Kunne ikke laste lagrede CV-versjoner:', error);
+    }
   }, []);
 
-  useEffect(() => {
-    if (!user) return;
+  const persistVersions = (nextVersions: CVVersion[]) => {
+    setVersions(nextVersions);
+    localStorage.setItem(VERSIONS_STORAGE_KEY, JSON.stringify(nextVersions));
+  };
 
-    const q = query(
-      collection(db, 'cv_versions'),
-      where('userId', '==', user.uid),
-      orderBy('updatedAt', 'desc')
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const v = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CVVersion));
-      setVersions(v);
-      
-      // If we don't have a current version yet, or it's not in the new list, pick the first one
-      if (v.length > 0 && !currentVersion) {
-        // Only auto-load if it's the first time
-        // setCurrentVersion(v[0]);
-        // setCvData(v[0].data);
-      }
-    });
-
-    return unsubscribe;
-  }, [user]);
-
-  const handleSaveAsNew = async () => {
-    if (!user) {
-      alert("Du må logge inn for å lagre versjoner.");
-      return;
-    }
+  const handleSaveAsNew = () => {
     const name = prompt("Navn på versjon (f.eks. 'Tech Focus'):");
     if (!name) return;
 
     setIsSaving(true);
     try {
-      const res = await saveCVVersion(user.uid, name, cvData);
-      // Optional: automatically select the new version
+      const timestamp = Date.now();
+      const newVersion: CVVersion = {
+        id: `${timestamp}-${Math.random().toString(36).slice(2)}`,
+        userId: 'local',
+        name,
+        data: cvData,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      };
+      persistVersions([newVersion, ...versions]);
+      setCurrentVersion(newVersion);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = () => {
     if (!currentVersion) {
       handleSaveAsNew();
       return;
@@ -92,7 +80,11 @@ export default function App() {
 
     setIsSaving(true);
     try {
-      await updateCVVersion(currentVersion.id, currentVersion.name, cvData);
+      const updatedVersion = { ...currentVersion, data: cvData, updatedAt: Date.now() };
+      persistVersions(versions.map((version) => (
+        version.id === updatedVersion.id ? updatedVersion : version
+      )));
+      setCurrentVersion(updatedVersion);
     } finally {
       setIsSaving(false);
     }
@@ -108,10 +100,10 @@ export default function App() {
     window.print();
   };
 
-  const handleDelete = async (e: MouseEvent, id: string) => {
+  const handleDelete = (e: MouseEvent, id: string) => {
     e.stopPropagation();
     if (confirm("Er du sikker på at du vil slette denne versjonen?")) {
-      await deleteCVVersion(id);
+      persistVersions(versions.filter((version) => version.id !== id));
       if (currentVersion?.id === id) {
         setCurrentVersion(null);
         setCvData(initialCVData);
@@ -146,43 +138,14 @@ export default function App() {
             Last ned som PDF122
           </button>
 
-          {user ? (
-            <>
-              <button
-                onClick={handleUpdate}
-                disabled={isSaving}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
-              >
-                <Save size={16} />
-                {isSaving ? 'Lagrer...' : currentVersion ? 'Lagre endringer' : 'Lagre ny versjon'}
-              </button>
-              
-              <div className="h-8 w-[1px] bg-slate-200 mx-2" />
-              
-              <div className="flex items-center gap-3">
-                <img 
-                  src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`} 
-                  className="w-8 h-8 rounded-full border"
-                  alt="Avatar"
-                />
-                <button 
-                  onClick={signOut}
-                  className="p-2 text-gray-500 hover:text-red-500 transition-colors"
-                  title="Logg ut"
-                >
-                  <LogOut size={20} />
-                </button>
-              </div>
-            </>
-          ) : (
-            <button 
-              onClick={signIn}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
-            >
-              <LogIn size={16} />
-              Logg inn for å lagre
-            </button>
-          )}
+          <button
+            onClick={handleUpdate}
+            disabled={isSaving}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+          >
+            <Save size={16} />
+            {isSaving ? 'Lagrer...' : currentVersion ? 'Lagre endringer' : 'Lagre ny versjon'}
+          </button>
         </div>
       </nav>
 
@@ -270,7 +233,7 @@ export default function App() {
                       </div>
                       <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-2">
                         <Clock size={10} />
-                        <span>{v.updatedAt?.toDate().toLocaleDateString()}</span>
+                        <span>{formatVersionDate(v.updatedAt)}</span>
                       </div>
                     </button>
                   ))
@@ -317,7 +280,7 @@ export default function App() {
         </aside>
 
         {/* Content View */}
-        <div className="flex-1 overflow-y-auto p-6 bg-slate-200/50 scroll-smooth flex justify-center print:overflow-visible print:h-auto print:p-0 print:bg-white print:block">
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-200/50 scroll-smooth flex justify-center print:overflow-visible print:h-auto print:p-0 print:bg-white print:block print-document">
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}

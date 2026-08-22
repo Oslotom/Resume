@@ -111,12 +111,12 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
   };
 
   return (
-    <div className="flex flex-col gap-12 w-full max-w-[1000px] mx-auto pb-20 print:gap-0 print:pb-0 print:max-w-none">
+    <div className="flex flex-col gap-12 w-full max-w-[1000px] mx-auto pb-20 print:gap-0 print:pb-0 print:max-w-none print-document-pages">
       {/* PAGE 1 */}
-      <div className="bg-white shadow-2xl w-full min-h-[1414px] flex flex-col md:flex-row text-[#333] font-sans overflow-hidden ring-1 ring-slate-200 print:shadow-none print:ring-0 print:break-after-page">
+      <div className="bg-white shadow-2xl w-full min-h-[1414px] flex flex-col md:flex-row text-[#333] font-sans overflow-hidden ring-1 ring-slate-200 print:shadow-none print:ring-0 print:break-after-page print-document-page">
         {/* Left Sidebar */}
         <div 
-          className="bg-[#4A4A4A] text-white flex flex-col transition-all duration-300 relative group/sidebar"
+          className="bg-[#4A4A4A] text-white flex flex-col transition-all duration-300 relative group/sidebar print-document-sidebar"
           style={{ width: `${sidebarWidth}%` }}
         >
           {/* Sidebar Width Handle */}
@@ -228,7 +228,7 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
 
         {/* Main Content Area */}
         <div 
-          className="bg-white flex flex-col transition-all duration-300 relative group/main"
+          className="bg-white flex flex-col transition-all duration-300 relative group/main print-document-main"
           style={{ 
             width: `${mainWidth}%`,
             padding: `${contentPadding}px`
@@ -360,7 +360,7 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
       </div>
 
       {/* PAGE 2 */}
-      <div className="bg-white shadow-2xl w-full min-h-[1414px] flex flex-col text-[#333] font-sans overflow-hidden ring-1 ring-slate-200">
+      <div className="bg-white shadow-2xl w-full min-h-[1414px] flex flex-col text-[#333] font-sans overflow-hidden ring-1 ring-slate-200 print-document-page">
         <div 
           className="bg-white flex flex-col transition-all duration-300"
           style={{ 
