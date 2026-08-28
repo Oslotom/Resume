@@ -26,6 +26,14 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
   const itemSpacing = data.settings?.itemSpacing ?? 24;
   const headerSpacing = data.settings?.headerSpacing ?? 48;
   const fieldPadding = data.settings?.fieldPadding ?? 8;
+  
+  const nameFontSize = data.settings?.nameFontSize ?? 26;
+  const titleFontSize = data.settings?.titleFontSize ?? 9;
+  const sectionTitleFontSize = data.settings?.sectionTitleFontSize ?? 11;
+  const bodyFontSize = data.settings?.bodyFontSize ?? 7.8;
+  const sidebarTitleFontSize = data.settings?.sidebarTitleFontSize ?? 10;
+  const sidebarBodyFontSize = data.settings?.sidebarBodyFontSize ?? 8.5;
+
   const mainWidth = 100 - sidebarWidth;
 
   useEffect(() => {
@@ -161,10 +169,16 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
                 className={cn("cursor-pointer hover:bg-white/5 rounded transition-colors group", fieldHighlight)}
                 style={{ padding: `${fieldPadding}px`, margin: `-${fieldPadding}px` }}
               >
-                <h2 className="font-heading font-semibold text-[10pt] tracking-widest border-b border-[#666] pb-1.5 mb-3 group-hover:text-indigo-300 uppercase">
+                <h2 
+                  className="font-heading font-semibold tracking-widest border-b border-[#666] pb-1.5 mb-3 group-hover:text-indigo-300 uppercase"
+                  style={{ fontSize: `${sidebarTitleFontSize}pt` }}
+                >
                   {data.personal.subtitle}
                 </h2>
-                <p className="font-body text-[8.5pt] leading-relaxed text-gray-200 font-normal">
+                <p 
+                  className="font-body leading-relaxed text-gray-200 font-normal"
+                  style={{ fontSize: `${sidebarBodyFontSize}pt` }}
+                >
                   {data.personal.summary}
                 </p>
               </section>
@@ -175,10 +189,16 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
                 className={cn("cursor-pointer hover:bg-white/5 rounded transition-colors group", fieldHighlight)}
                 style={{ padding: `${fieldPadding}px`, margin: `-${fieldPadding}px` }}
               >
-                <h2 className="font-heading font-semibold text-[10pt] tracking-widest border-b border-[#666] pb-1.5 mb-3 group-hover:text-indigo-300 uppercase">
+                <h2 
+                  className="font-heading font-semibold tracking-widest border-b border-[#666] pb-1.5 mb-3 group-hover:text-indigo-300 uppercase"
+                  style={{ fontSize: `${sidebarTitleFontSize}pt` }}
+                >
                   Ferdigheter
                 </h2>
-                <ul className="space-y-1.5 font-body text-[8.5pt] tracking-tight">
+                <ul 
+                  className="space-y-1.5 font-body tracking-tight"
+                  style={{ fontSize: `${sidebarBodyFontSize}pt` }}
+                >
                   {data.skills.map((skill, index) => (
                     <li key={index} className="uppercase leading-tight text-gray-100">{skill}</li>
                   ))}
@@ -191,10 +211,16 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
                 className={cn("cursor-pointer hover:bg-white/5 rounded transition-colors group", fieldHighlight)}
                 style={{ padding: `${fieldPadding}px`, margin: `-${fieldPadding}px` }}
               >
-                <h2 className="font-heading font-semibold text-[10pt] tracking-widest border-b border-[#666] pb-1.5 mb-3 group-hover:text-indigo-300 uppercase">
+                <h2 
+                  className="font-heading font-semibold tracking-widest border-b border-[#666] pb-1.5 mb-3 group-hover:text-indigo-300 uppercase"
+                  style={{ fontSize: `${sidebarTitleFontSize}pt` }}
+                >
                   Link
                 </h2>
-                <ul className="space-y-1 font-body text-[8.5pt]">
+                <ul 
+                  className="space-y-1 font-body"
+                  style={{ fontSize: `${sidebarBodyFontSize}pt` }}
+                >
                   {data.links.map((link, index) => (
                     <li key={index} className="flex items-center gap-2 font-normal">
                       <span>{link.label}: {link.url}</span>
@@ -209,15 +235,35 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
                 className={cn("cursor-pointer hover:bg-white/5 rounded transition-colors group", fieldHighlight)}
                 style={{ padding: `${fieldPadding}px`, margin: `-${fieldPadding}px` }}
               >
-                <h2 className="font-heading font-semibold text-[10pt] tracking-widest border-b border-[#666] pb-1.5 mb-3 group-hover:text-indigo-300 uppercase">
+                <h2 
+                  className="font-heading font-semibold tracking-widest border-b border-[#666] pb-1.5 mb-3 group-hover:text-indigo-300 uppercase"
+                  style={{ fontSize: `${sidebarTitleFontSize}pt` }}
+                >
                   Utdanning
                 </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: `${itemSpacing/1.5}px` }}>
                   {data.education.map((edu) => (
                     <div key={edu.id} className="space-y-0.5">
-                      <h3 className="font-body text-[8.5pt] font-semibold text-white leading-tight">{edu.degree}</h3>
-                      <p className="font-body text-[7.5pt] text-gray-300 font-normal">{edu.school} {edu.period && `· ${edu.period}`}</p>
-                      {edu.details && <p className="font-body text-[7.8pt] italic text-gray-400 font-normal leading-snug">{edu.details}</p>}
+                      <h3 
+                        className="font-body font-semibold text-white leading-tight"
+                        style={{ fontSize: `${sidebarBodyFontSize}pt` }}
+                      >
+                        {edu.degree}
+                      </h3>
+                      <p 
+                        className="font-body text-gray-300 font-normal"
+                        style={{ fontSize: `${sidebarBodyFontSize * 0.88}pt` }}
+                      >
+                        {edu.school} {edu.period && `· ${edu.period}`}
+                      </p>
+                      {edu.details && (
+                        <p 
+                          className="font-body italic text-gray-400 font-normal leading-snug"
+                          style={{ fontSize: `${sidebarBodyFontSize * 0.92}pt` }}
+                        >
+                          {edu.details}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -258,15 +304,24 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
 
             <div className="absolute top-2 right-2 opacity-0 group-hover/header:opacity-100 bg-indigo-600 text-white text-[10px] px-2 py-1 rounded-full uppercase font-bold tracking-tighter">Edit Header</div>
             <div className="mb-2">
-              <h1 className="font-heading text-[26pt] font-light text-[#333] tracking-[0.1em] leading-tight">
+              <h1 
+                className="font-heading font-light text-[#333] tracking-[0.1em] leading-tight"
+                style={{ fontSize: `${nameFontSize}pt` }}
+              >
                 {data.personal.name.split(' ')[0]}
               </h1>
-              <h1 className="font-heading text-[26pt] font-light text-[#333] tracking-[0.1em] leading-tight">
+              <h1 
+                className="font-heading font-light text-[#333] tracking-[0.1em] leading-tight"
+                style={{ fontSize: `${nameFontSize}pt` }}
+              >
                 {data.personal.name.split(' ').slice(1).join(' ')}
               </h1>
             </div>
 
-            <p className="font-heading text-[9pt] font-thin text-gray-500 tracking-[0.4em] uppercase mb-8">
+            <p 
+              className="font-heading font-thin text-gray-500 tracking-[0.4em] uppercase mb-8"
+              style={{ fontSize: `${titleFontSize}pt` }}
+            >
               {data.personal.title}
             </p>
 
@@ -301,7 +356,10 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
             </div>
 
             <div className="absolute top-2 right-2 opacity-0 group-hover/exp:opacity-100 bg-indigo-600 text-white text-[10px] px-2 py-1 rounded-full uppercase font-bold tracking-tighter">Edit Experience</div>
-            <h2 className="font-heading text-[11pt] font-semibold tracking-widest border-b-2 border-[#333] pb-1 mb-5 group-hover:text-indigo-600 uppercase">
+            <h2 
+              className="font-heading font-semibold tracking-widest border-b-2 border-[#333] pb-1 mb-5 group-hover:text-indigo-600 uppercase"
+              style={{ fontSize: `${sectionTitleFontSize}pt` }}
+            >
               Arbeidserfaring
             </h2>
             
@@ -328,9 +386,24 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
                       className="absolute inset-y-0 right-0 w-2 cursor-col-resize opacity-0 group-hover/col-width:opacity-100 hover:bg-indigo-500/20 transition-all z-30"
                       onMouseDown={(e) => startDragging(e, 'experienceWidth', experienceWidth)}
                     ></div>
-                    <span className="font-body text-[8.5pt] font-semibold text-[#333] leading-tight uppercase">{exp.company}</span>
-                    <p className="font-body text-[7.5pt] text-gray-500 font-normal">{exp.location}</p>
-                    <p className="font-body text-[7.5pt] text-gray-500 italic mt-0.5">{exp.period}</p>
+                    <span 
+                      className="font-body font-semibold text-[#333] leading-tight uppercase"
+                      style={{ fontSize: `${bodyFontSize * 1.09}pt` }}
+                    >
+                      {exp.company}
+                    </span>
+                    <p 
+                      className="font-body text-gray-500 font-normal"
+                      style={{ fontSize: `${bodyFontSize * 0.96}pt` }}
+                    >
+                      {exp.location}
+                    </p>
+                    <p 
+                      className="font-body text-gray-500 italic mt-0.5"
+                      style={{ fontSize: `${bodyFontSize * 0.96}pt` }}
+                    >
+                      {exp.period}
+                    </p>
                   </div>
                   
                   {/* Timeline Dot & Line */}
@@ -341,11 +414,25 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
 
                   {/* Right side: Role & Details */}
                   <div className="flex-1 space-y-1.5 pl-0">
-                    <h3 className="font-heading text-[10.5pt] font-semibold text-[#333] tracking-tight leading-none mb-1">{exp.role}</h3>
-                    <p className="font-body text-[7.8pt] leading-relaxed text-[#333] font-normal">{exp.description}</p>
+                    <h3 
+                      className="font-heading font-semibold text-[#333] tracking-tight leading-none mb-1"
+                      style={{ fontSize: `${bodyFontSize * 1.34}pt` }}
+                    >
+                      {exp.role}
+                    </h3>
+                    <p 
+                      className="font-body leading-relaxed text-[#333] font-normal"
+                      style={{ fontSize: `${bodyFontSize}pt` }}
+                    >
+                      {exp.description}
+                    </p>
                     <ul className="space-y-0.5">
                       {exp.bullets.map((bullet, i) => (
-                        <li key={i} className="font-body text-[7.8pt] text-[#444] leading-relaxed flex items-start gap-2 font-normal">
+                        <li 
+                          key={i} 
+                          className="font-body text-[#444] leading-relaxed flex items-start gap-2 font-normal"
+                          style={{ fontSize: `${bodyFontSize}pt` }}
+                        >
                           <span className="w-1 h-1 bg-[#333] rounded-full mt-2 shrink-0"></span>
                           {bullet}
                         </li>
@@ -374,7 +461,10 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
             style={{ padding: `${fieldPadding}px`, margin: `-${fieldPadding}px` }}
           >
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-indigo-600 text-white text-[10px] px-2 py-1 rounded-full uppercase font-bold tracking-tighter">Edit Projects</div>
-            <h2 className="font-heading text-[11pt] font-semibold tracking-widest border-b-2 border-[#333] pb-2 group-hover:text-indigo-600 uppercase" style={{ marginBottom: `${sectionSpacing}px` }}>
+            <h2 
+              className="font-heading font-semibold tracking-widest border-b-2 border-[#333] pb-2 group-hover:text-indigo-600 uppercase" 
+              style={{ marginBottom: `${sectionSpacing}px`, fontSize: `${sectionTitleFontSize}pt` }}
+            >
               Utvalgte prosjekter
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: `${itemSpacing}px` }}>
@@ -392,13 +482,28 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
 
                   {/* Left Column: Project Name & Client */}
                   <div className="w-[180px] shrink-0 text-right">
-                    <h3 className="font-heading text-[10.5pt] font-semibold text-[#333] uppercase leading-tight">{proj.title}</h3>
-                    <p className="font-body text-[7.5pt] text-gray-400 mt-1 uppercase tracking-wider">{proj.client}</p>
+                    <h3 
+                      className="font-heading font-semibold text-[#333] uppercase leading-tight"
+                      style={{ fontSize: `${bodyFontSize * 1.34}pt` }}
+                    >
+                      {proj.title}
+                    </h3>
+                    <p 
+                      className="font-body text-gray-400 mt-1 uppercase tracking-wider"
+                      style={{ fontSize: `${bodyFontSize * 0.96}pt` }}
+                    >
+                      {proj.client}
+                    </p>
                   </div>
 
                   {/* Right Column: Description */}
                   <div className="flex-1">
-                    <p className="font-body text-[7.8pt] text-[#444] leading-relaxed font-normal">{proj.description}</p>
+                    <p 
+                      className="font-body text-[#444] leading-relaxed font-normal"
+                      style={{ fontSize: `${bodyFontSize}pt` }}
+                    >
+                      {proj.description}
+                    </p>
                   </div>
                 </div>
               ))}

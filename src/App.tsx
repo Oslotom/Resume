@@ -4,28 +4,31 @@ import {
   Plus,
   History,
   Save,
+  LogOut,
+  LogIn,
   ChevronRight,
+  FileText,
   Trash2,
   Clock,
   Layout,
   Download
 } from 'lucide-react';
+import { onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
+import { auth, signIn, signOut, saveCVVersion, updateCVVersion, deleteCVVersion, db } from './lib/firebase';
 import { CVData, CVVersion } from './types';
 import { initialCVData } from './initialData';
 import CVPreview from './components/CVPreview';
 import CVEditor from './components/CVEditor';
 import { cn } from './lib/utils';
 
-const VERSIONS_STORAGE_KEY = 'curriculum-pro-versions';
-
-const formatVersionDate = (timestamp: CVVersion['updatedAt']) => {
-  const date = typeof timestamp === 'number'
-    ? new Date(timestamp)
-    : timestamp?.toDate?.() || new Date();
-  return date.toLocaleDateString('nb-NO');
-};
-
 export default function App() {
+  const [isLocalAuthenticated, setIsLocalAuthenticated] = useState(() => {
+    return localStorage.getItem('local_auth') === 'true';
+  });
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [loginError, setLoginError] = useState('');
+
+  const [user, setUser] = useState(auth.currentUser);
   const [versions, setVersions] = useState<CVVersion[]>([]);
   const [currentVersion, setCurrentVersion] = useState<CVVersion | null>(null);
   const [cvData, setCvData] = useState<CVData>(initialCVData);
@@ -34,45 +37,75 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'preview' | 'versions'>('preview');
   const [highlightSetting, setHighlightSetting] = useState<string | null>(null);
 
-  useEffect(() => {
-    try {
-      const storedVersions = localStorage.getItem(VERSIONS_STORAGE_KEY);
-      if (storedVersions) {
-        setVersions(JSON.parse(storedVersions) as CVVersion[]);
-      }
-    } catch (error) {
-      console.error('Kunne ikke laste lagrede CV-versjoner:', error);
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loginForm.username === 'Tom' && loginForm.password === 'basiri') {
+      setIsLocalAuthenticated(true);
+      localStorage.setItem('local_auth', 'true');
+    } else {
+      setLoginError('Feil brukernavn eller passord');
     }
-  }, []);
-
-  const persistVersions = (nextVersions: CVVersion[]) => {
-    setVersions(nextVersions);
-    localStorage.setItem(VERSIONS_STORAGE_KEY, JSON.stringify(nextVersions));
   };
 
-  const handleSaveAsNew = () => {
+  const handleLocalLogout = () => {
+    setIsLocalAuthenticated(false);
+    localStorage.removeItem('local_auth');
+  };
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((u) => {
+      setUser(u);
+      if (!u) {
+        setVersions([]);
+        setCurrentVersion(null);
+        setCvData(initialCVData);
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const q = query(
+      collection(db, 'cv_versions'),
+      where('userId', '==', user.uid),
+      orderBy('updatedAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const v = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CVVersion));
+      setVersions(v);
+      
+      // If we don't have a current version yet, or it's not in the new list, pick the first one
+      if (v.length > 0 && !currentVersion) {
+        // Only auto-load if it's the first time
+        // setCurrentVersion(v[0]);
+        // setCvData(v[0].data);
+      }
+    });
+
+    return unsubscribe;
+  }, [user]);
+
+  const handleSaveAsNew = async () => {
+    if (!user) {
+      alert("Du må logge inn for å lagre versjoner.");
+      return;
+    }
     const name = prompt("Navn på versjon (f.eks. 'Tech Focus'):");
     if (!name) return;
 
     setIsSaving(true);
     try {
-      const timestamp = Date.now();
-      const newVersion: CVVersion = {
-        id: `${timestamp}-${Math.random().toString(36).slice(2)}`,
-        userId: 'local',
-        name,
-        data: cvData,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      };
-      persistVersions([newVersion, ...versions]);
-      setCurrentVersion(newVersion);
+      const res = await saveCVVersion(user.uid, name, cvData);
+      // Optional: automatically select the new version
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!currentVersion) {
       handleSaveAsNew();
       return;
@@ -80,11 +113,7 @@ export default function App() {
 
     setIsSaving(true);
     try {
-      const updatedVersion = { ...currentVersion, data: cvData, updatedAt: Date.now() };
-      persistVersions(versions.map((version) => (
-        version.id === updatedVersion.id ? updatedVersion : version
-      )));
-      setCurrentVersion(updatedVersion);
+      await updateCVVersion(currentVersion.id, currentVersion.name, cvData);
     } finally {
       setIsSaving(false);
     }
@@ -100,16 +129,68 @@ export default function App() {
     window.print();
   };
 
-  const handleDelete = (e: MouseEvent, id: string) => {
+  const handleDelete = async (e: MouseEvent, id: string) => {
     e.stopPropagation();
     if (confirm("Er du sikker på at du vil slette denne versjonen?")) {
-      persistVersions(versions.filter((version) => version.id !== id));
+      await deleteCVVersion(id);
       if (currentVersion?.id === id) {
         setCurrentVersion(null);
         setCvData(initialCVData);
       }
     }
   };
+
+  if (!isLocalAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200"
+        >
+          <div className="flex flex-col items-center gap-4 mb-8">
+            <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">
+              C
+            </div>
+            <h1 className="text-2xl font-bold text-slate-900">Velkommen tilbake</h1>
+            <p className="text-slate-500 text-sm">Vennligst logg inn for å fortsette</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Brukernavn</label>
+              <input 
+                type="text"
+                required
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 outline-none transition-all"
+                value={loginForm.username}
+                onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Passord</label>
+              <input 
+                type="password"
+                required
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 outline-none transition-all"
+                value={loginForm.password}
+                onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+              />
+            </div>
+            {loginError && (
+              <p className="text-red-500 text-xs font-medium text-center">{loginError}</p>
+            )}
+            <button 
+              type="submit"
+              className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-[0.98] transition-all"
+            >
+              Logg inn
+            </button>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
@@ -135,17 +216,58 @@ export default function App() {
             className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full text-sm font-medium hover:border-indigo-200 hover:text-indigo-600 transition-all active:scale-95"
           >
             <Download size={16} />
-            Last ned som PDF122
+            Last ned som PDF
           </button>
 
-          <button
-            onClick={handleUpdate}
-            disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
-          >
-            <Save size={16} />
-            {isSaving ? 'Lagrer...' : currentVersion ? 'Lagre endringer' : 'Lagre ny versjon'}
-          </button>
+          {user ? (
+            <>
+              <button
+                onClick={handleUpdate}
+                disabled={isSaving}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+              >
+                <Save size={16} />
+                {isSaving ? 'Lagrer...' : currentVersion ? 'Lagre endringer' : 'Lagre ny versjon'}
+              </button>
+              
+              <div className="h-8 w-[1px] bg-slate-200 mx-2" />
+              
+              <div className="flex items-center gap-3">
+                <img 
+                  src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`} 
+                  className="w-8 h-8 rounded-full border"
+                  alt="Avatar"
+                />
+                <button 
+                  onClick={() => {
+                    signOut();
+                    handleLocalLogout();
+                  }}
+                  className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                  title="Logg ut"
+                >
+                  <LogOut size={20} />
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={signIn}
+                className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
+              >
+                <LogIn size={16} />
+                Logg inn for å lagre
+              </button>
+              <button 
+                onClick={handleLocalLogout}
+                className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                title="Lukk sesjon"
+              >
+                <LogOut size={20} />
+              </button>
+            </div>
+          )}
         </div>
       </nav>
 
@@ -163,7 +285,7 @@ export default function App() {
                 )}
               >
                 <Layout size={14} />
-                Preview22
+                Preview
               </button>
               <button 
                 onClick={() => setActiveTab('versions')}
@@ -173,7 +295,7 @@ export default function App() {
                 )}
               >
                 <History size={14} />
-                Versjoner22
+                Versjoner
               </button>
             </div>
           </div>
@@ -233,7 +355,7 @@ export default function App() {
                       </div>
                       <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-2">
                         <Clock size={10} />
-                        <span>{formatVersionDate(v.updatedAt)}</span>
+                        <span>{v.updatedAt?.toDate().toLocaleDateString()}</span>
                       </div>
                     </button>
                   ))
@@ -248,7 +370,7 @@ export default function App() {
                     className="w-full py-3 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:border-indigo-200 hover:text-indigo-600 transition-all flex items-center justify-center gap-2"
                   >
                     <Layout size={16} />
-                    Juster kolonnebredde1
+                    Juster kolonnebredde
                   </button>
                 </div>
 
@@ -256,7 +378,7 @@ export default function App() {
                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Instruksjoner</h3>
                 <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-3">
                   <p className="text-xs text-indigo-900 font-medium leading-relaxed">
-                    1Klikk på en hvilken som helst seksjon i CV-en til høyre for å begynne redigering.
+                    Klikk på en hvilken som helst seksjon i CV-en til høyre for å begynne redigering.
                   </p>
                   <ul className="text-[10px] text-indigo-600/70 space-y-1">
                     <li className="flex items-center gap-2 font-medium"><ChevronRight size={10} /> Sanntids-1oppdatering</li>
@@ -280,7 +402,7 @@ export default function App() {
         </aside>
 
         {/* Content View */}
-        <div className="flex-1 overflow-y-auto p-6 bg-slate-200/50 scroll-smooth flex justify-center print:overflow-visible print:h-auto print:p-0 print:bg-white print:block print-document">
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-200/50 scroll-smooth flex justify-center print:overflow-visible print:h-auto print:p-0 print:bg-white print:block">
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}

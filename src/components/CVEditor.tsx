@@ -130,6 +130,35 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {section === 'settings' && (
             <div className="space-y-6">
+              {/* Global Font Sizes */}
+              <div className="pt-4 border-t border-slate-100 space-y-4">
+                <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fontstørrelser</h3>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Navn ({localData.settings?.nameFontSize ?? 26}pt)</label>
+                  </div>
+                  <input 
+                    type="range" min="12" max="48" step="1"
+                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    value={localData.settings?.nameFontSize ?? 26}
+                    onChange={(e) => handleSettingsChange('nameFontSize', parseInt(e.target.value))}
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hovedtekst ({localData.settings?.bodyFontSize ?? 7.8}pt)</label>
+                  </div>
+                  <input 
+                    type="range" min="6" max="14" step="0.2"
+                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    value={localData.settings?.bodyFontSize ?? 7.8}
+                    onChange={(e) => handleSettingsChange('bodyFontSize', parseFloat(e.target.value))}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Sidefeltbredde ({localData.settings?.sidebarWidth || 35}%)</label>
@@ -307,11 +336,60 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
                   />
                 </div>
               </div>
+
+              <div className="pt-4 border-t border-slate-100 space-y-4">
+                <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fontstørrelser</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Navn ({localData.settings?.nameFontSize ?? 26}pt)</label>
+                    <input 
+                      type="range" min="12" max="48" step="1"
+                      className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      value={localData.settings?.nameFontSize ?? 26}
+                      onChange={(e) => handleSettingsChange('nameFontSize', parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tittel ({localData.settings?.titleFontSize ?? 9}pt)</label>
+                    <input 
+                      type="range" min="6" max="18" step="0.5"
+                      className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      value={localData.settings?.titleFontSize ?? 9}
+                      onChange={(e) => handleSettingsChange('titleFontSize', parseFloat(e.target.value))}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
           {section === 'experience' && (
             <div className="space-y-8">
+                <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-4">
+                  <h3 className="text-[10px] font-bold text-indigo-900 uppercase tracking-widest flex items-center gap-2">
+                    Seksjonsfont
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-bold text-indigo-700/60 uppercase">Overskrift ({localData.settings?.sectionTitleFontSize ?? 11}pt)</label>
+                      <input 
+                        type="range" min="8" max="20" step="0.5"
+                        className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                        value={localData.settings?.sectionTitleFontSize ?? 11}
+                        onChange={(e) => handleSettingsChange('sectionTitleFontSize', parseFloat(e.target.value))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-bold text-indigo-700/60 uppercase">Brødtekst ({localData.settings?.bodyFontSize ?? 7.8}pt)</label>
+                      <input 
+                        type="range" min="6" max="14" step="0.2"
+                        className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                        value={localData.settings?.bodyFontSize ?? 7.8}
+                        onChange={(e) => handleSettingsChange('bodyFontSize', parseFloat(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                </div>
               {localData.experience.map((exp, idx) => (
                 <div key={exp.id} className="p-5 bg-slate-50 rounded-2xl relative border border-slate-200">
                   <button 
@@ -377,14 +455,38 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
           )}
 
           {section === 'skills' && (
-            <div className="space-y-4">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Ferdigheter (én per linje)</label>
-              <textarea 
-                rows={15}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-mono text-xs leading-relaxed transition-all"
-                value={localData.skills.join('\n')}
-                onChange={(e) => updateSkills(e.target.value)}
-              />
+            <div className="space-y-6">
+              <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-indigo-700/60 uppercase">Overskrift ({localData.settings?.sidebarTitleFontSize ?? 10}pt)</label>
+                    <input 
+                      type="range" min="8" max="16" step="0.5"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      value={localData.settings?.sidebarTitleFontSize ?? 10}
+                      onChange={(e) => handleSettingsChange('sidebarTitleFontSize', parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-indigo-700/60 uppercase">Tekst ({localData.settings?.sidebarBodyFontSize ?? 8.5}pt)</label>
+                    <input 
+                      type="range" min="6" max="12" step="0.2"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      value={localData.settings?.sidebarBodyFontSize ?? 8.5}
+                      onChange={(e) => handleSettingsChange('sidebarBodyFontSize', parseFloat(e.target.value))}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Ferdigheter (én per linje)</label>
+                <textarea 
+                  rows={15}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-mono text-xs leading-relaxed transition-all"
+                  value={localData.skills.join('\n')}
+                  onChange={(e) => updateSkills(e.target.value)}
+                />
+              </div>
             </div>
           )}
         </div>

@@ -44,6 +44,12 @@ export interface CVData {
     itemSpacing?: number; // gap between jobs/projects
     headerSpacing?: number; // margin above/below name and header
     fieldPadding?: number; // padding on clickable/editable field sections
+    nameFontSize?: number;
+    titleFontSize?: number;
+    sectionTitleFontSize?: number;
+    bodyFontSize?: number;
+    sidebarTitleFontSize?: number;
+    sidebarBodyFontSize?: number;
   };
   personal: {
     name: string;

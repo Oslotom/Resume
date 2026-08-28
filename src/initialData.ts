@@ -8,7 +8,13 @@ export const initialCVData: CVData = {
     sidebarPadding: 32,
     sectionSpacing: 40,
     itemSpacing: 24,
-    headerSpacing: 48
+    headerSpacing: 48,
+    nameFontSize: 26,
+    titleFontSize: 9,
+    sectionTitleFontSize: 11,
+    bodyFontSize: 7.8,
+    sidebarTitleFontSize: 10,
+    sidebarBodyFontSize: 8.5
   },
   personal: {
     name: "TOM HAUGEPLASS",
