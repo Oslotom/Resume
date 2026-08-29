@@ -15,6 +15,22 @@ import { CVVersion, CVData } from '../types';
 import { predefinedTemplates, CVTemplate } from '../variants';
 import { cn } from '../lib/utils';
 
+function formatUpdatedAt(updatedAt: unknown): string {
+  if (!updatedAt) return '';
+  try {
+    // Firestore Timestamp
+    if (typeof (updatedAt as { toDate?: () => Date }).toDate === 'function') {
+      return (updatedAt as { toDate: () => Date }).toDate().toLocaleDateString('nb-NO');
+    }
+    // ISO string or Date
+    const d = new Date(updatedAt as string | number | Date);
+    if (!isNaN(d.getTime())) return d.toLocaleDateString('nb-NO');
+  } catch {
+    // ignore
+  }
+  return '';
+}
+
 interface ManagementPageProps {
   versions: CVVersion[];
   currentVersion: CVVersion | null;
@@ -145,7 +161,7 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
                           </h3>
                           <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                             <Clock size={12} />
-                            <span>{v.updatedAt?.toDate?.()?.toLocaleDateString?.() ?? ''}</span>
+                            <span>{formatUpdatedAt(v.updatedAt)}</span>
                           </div>
                         </div>
                         {currentVersion?.id === v.id ? (
@@ -218,7 +234,7 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
                  </div>
                </div>
                <p className="text-[10px] opacity-60 leading-relaxed font-medium italic">
-                 Dine CV-er lagres trygt i skyen og kan nås fra alle enheter.
+                 Versjoner lagres lokalt i nettleseren din.
                </p>
             </div>
           </div>
