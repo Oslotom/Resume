@@ -14,7 +14,18 @@ export const initialCVData: CVData = {
     sectionTitleFontSize: 11,
     bodyFontSize: 7.8,
     sidebarTitleFontSize: 10,
-    sidebarBodyFontSize: 8.5
+    sidebarBodyFontSize: 8.5,
+    headingFontFamily: 'Raleway',
+    bodyFontFamily: 'Open Sans',
+    lineHeight: 1.5,
+    nameToTitleSpacing: 8,
+    titleToContactSpacing: 32,
+    headerVerticalPadding: 64,
+    headerPaddingTop: 64,
+    headerContactGap: 24,
+    projectsWidth: 320,
+    projectsDescriptionWidth: 400,
+    pageWidth: 1000
   },
   personal: {
     name: "TOM HAUGEPLASS",
@@ -141,37 +152,43 @@ export const initialCVData: CVData = {
       id: "proj1",
       title: "Betalings- og identitetsløsninger — Vipps Direct, Trustly, Klarna og BankID",
       client: "Foodora Norway",
-      description: "Koordinerte lokal utrulling av nye betalings- og innloggingsløsninger — endringer der feil ville rammet betaling og innlogging for over 1 million brukere. Ansvar for avklaringer mellom relevante team, testing, avhengigheter og oppfølging av produksjonssetting."
+      description: "Koordinerte lokal utrulling av nye betalings- og innloggingsløsninger — endringer der feil ville rammet betaling og innlogging for over 1 million brukere. Ansvar for avklaringer mellom relevante team, testing, avhengigheter og oppfølging av produksjonssetting.",
+      bullets: []
     },
     {
       id: "proj2",
       title: "App-konsolidering på tvers av 6 land",
       client: "Foodora Norway",
-      description: "Koordinerte de lokale endringene da 6 land konsoliderte appen: sikret fremdrift, testet utrulling, fulgte opp feilrapporter, og gjennomførte brukerintervjuer med analyse av resultatene i forbindelse med relanseringen."
+      description: "Koordinerte de lokale endringene da 6 land konsoliderte appen: sikret fremdrift, testet utrulling, fulgte opp feilrapporter, og gjennomførte brukerintervjuer med analyse av resultatene i forbindelse med relanseringen.",
+      bullets: []
     },
     {
       id: "proj3",
       title: "Automatisert KPI-rapportering til ledelsen",
       client: "Foodora Norway",
-      description: "Bygget månedlig produktrapportering på BigQuery-data med automatisk oppdatering av diagrammer og presentasjoner — grunnlag for oppfølging av avvik og forbedringstiltak."
+      description: "Bygget månedlig produktrapportering på BigQuery-data med automatisk oppdatering av diagrammer og presentasjoner — grunnlag for oppfølging av avvik og forbedringstiltak.",
+      bullets: []
     },
     {
       id: "proj4",
       title: "Parklink — fra 50 000 til 600 000 brukere",
       client: "Bember AS",
-      description: "Sentral i produktutviklingen gjennom hele vekstreisen — prototyper, brukerhistorier og spesifiserte krav i tett koordinering med utviklingsteamet, og daglig samarbeid med DevOps om drift og tekniske endringer."
+      description: "Sentral i produktutviklingen gjennom hele vekstreisen — prototyper, brukerhistorier og spesifiserte krav i tett koordinering med utviklingsteamet, og daglig samarbeid med DevOps om drift og tekniske endringer.",
+      bullets: []
     },
     {
       id: "proj5",
       title: "Automatisering av supportprosesser",
       client: "Bember AS",
-      description: "Automatiserte interne supportprosesser gjennom systematisk prosessforbedring og struktur — reduserte manuelt arbeid og doblet prosesseffektiviteten."
+      description: "Automatiserte interne supportprosesser gjennom systematisk prosessforbedring og struktur — reduserte manuelt arbeid og doblet prosesseffektiviteten.",
+      bullets: []
     },
     {
       id: "proj6",
       title: "Overgang til åpen kildekode og nytt prosjektstyringsverktøy",
       client: "NSN AS",
-      description: "Ledet overgangen fra egenutviklet CMS og prosjektstyring til WordPress/WooCommerce og Teamwork for et byrå med over 2 000 bedriftskunder — valgte løsninger, lærte opp ansatte underveis og reduserte leveransetiden med ca. 20 %."
+      description: "Ledet overgangen fra egenutviklet CMS og prosjektstyring til WordPress/WooCommerce og Teamwork for et byrå med over 2 000 bedriftskunder — valgte løsninger, lærte opp ansatte underveis og reduserte leveransetiden med ca. 20 %.",
+      bullets: []
     }
   ]
 };

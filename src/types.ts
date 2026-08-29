@@ -32,6 +32,7 @@ export interface ProjectItem {
   title: string;
   client: string;
   description: string;
+  bullets: string[];
 }
 
 export interface CVData {
@@ -50,6 +51,17 @@ export interface CVData {
     bodyFontSize?: number;
     sidebarTitleFontSize?: number;
     sidebarBodyFontSize?: number;
+    headingFontFamily?: string;
+    bodyFontFamily?: string;
+    projectsWidth?: number;
+    lineHeight?: number;
+    nameToTitleSpacing?: number;
+    titleToContactSpacing?: number;
+    headerVerticalPadding?: number;
+    headerPaddingTop?: number;
+    headerContactGap?: number;
+    projectsDescriptionWidth?: number;
+    pageWidth?: number;
   };
   personal: {
     name: string;

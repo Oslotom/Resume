@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
+:root {
+  --heading-font: "Raleway", sans-serif;
+  --body-font: "Open Sans", sans-serif;
+}
+
 @theme {
-  --font-heading: "Raleway", sans-serif;
-  --font-body: "Open Sans", sans-serif;
+  --font-heading: var(--heading-font);
+  --font-body: var(--body-font);
 }
 
 @page {

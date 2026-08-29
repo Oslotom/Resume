@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Save, Plus, Trash2 } from 'lucide-react';
+import { X, Save, Plus, Trash2, Type, Layout, Maximize, Move, AlignLeft, GripVertical } from 'lucide-react';
 import { CVData, ExperienceItem, EducationItem, LanguageItem, ProjectItem } from '../types';
 import { cn } from '../lib/utils';
 
@@ -85,6 +85,30 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
     setLocalData(updated);
   };
 
+  const updateProjects = (id: string, updates: Partial<ProjectItem>) => {
+    const updated = { ...localData };
+    updated.projects = updated.projects.map(proj => proj.id === id ? { ...proj, ...updates } : proj);
+    setLocalData(updated);
+  };
+
+  const addProject = () => {
+    const updated = { ...localData };
+    updated.projects.push({
+      id: Math.random().toString(36).substr(2, 9),
+      title: "Nytt prosjekt",
+      client: "Kunde",
+      description: "",
+      bullets: [""]
+    });
+    setLocalData(updated);
+  };
+
+  const removeProject = (id: string) => {
+    const updated = { ...localData };
+    updated.projects = updated.projects.filter(proj => proj.id !== id);
+    setLocalData(updated);
+  };
+
   const updateSkills = (val: string) => {
     setLocalData({ ...localData, skills: val.split('\n').filter(s => s.trim() !== '') });
   };
@@ -96,7 +120,7 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-slate-900/10"
       />
       
       <motion.div 
@@ -129,163 +153,115 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {section === 'settings' && (
-            <div className="space-y-6">
-              {/* Global Font Sizes */}
-              <div className="pt-4 border-t border-slate-100 space-y-4">
-                <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fontstørrelser</h3>
-                
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Navn ({localData.settings?.nameFontSize ?? 26}pt)</label>
-                  </div>
-                  <input 
-                    type="range" min="12" max="48" step="1"
-                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                    value={localData.settings?.nameFontSize ?? 26}
-                    onChange={(e) => handleSettingsChange('nameFontSize', parseInt(e.target.value))}
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hovedtekst ({localData.settings?.bodyFontSize ?? 7.8}pt)</label>
-                  </div>
-                  <input 
-                    type="range" min="6" max="14" step="0.2"
-                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                    value={localData.settings?.bodyFontSize ?? 7.8}
-                    onChange={(e) => handleSettingsChange('bodyFontSize', parseFloat(e.target.value))}
-                  />
-                </div>
-              </div>
-
+            <div className="space-y-8">
+              {/* CATEGORY: PAGE & GLOBAL LAYOUT */}
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Sidefeltbredde ({localData.settings?.sidebarWidth || 35}%)</label>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                    <Layout size={14} />
+                  </div>
+                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Global Side & Layout</h3>
                 </div>
-                <input 
-                  type="range"
-                  min="20"
-                  max="50"
-                  step="1"
-                  className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                  value={localData.settings?.sidebarWidth || 35}
-                  onChange={(e) => handleSettingsChange('sidebarWidth', parseInt(e.target.value))}
-                />
-                <p className="text-[10px] text-slate-400 italic">Juster forholdet mellom det mørke sidefeltet og hovedinnholdet.</p>
+
+                <div className="space-y-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between">
+                      <span>Total Sidebredde</span>
+                      <span className="text-blue-600">{localData.settings?.pageWidth ?? 1000}px</span>
+                    </label>
+                    <input 
+                      type="range" min="600" max="1200" step="20"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      value={localData.settings?.pageWidth ?? 1000}
+                      onChange={(e) => handleSettingsChange('pageWidth', parseInt(e.target.value))}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between">
+                        <span>Seksjonsavstand</span>
+                        <span className="text-blue-600">{localData.settings?.sectionSpacing ?? 48}px</span>
+                      </label>
+                      <input 
+                        type="range" min="16" max="96" step="4"
+                        className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        value={localData.settings?.sectionSpacing ?? 48}
+                        onChange={(e) => handleSettingsChange('sectionSpacing', parseInt(e.target.value))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between">
+                        <span>Felt-padding</span>
+                        <span className="text-blue-600">{localData.settings?.fieldPadding ?? 8}px</span>
+                      </label>
+                      <input
+                        type="range" min="0" max="32" step="2"
+                        className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        value={localData.settings?.fieldPadding ?? 8}
+                        onChange={(e) => handleSettingsChange('fieldPadding', parseInt(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
+              {/* CATEGORY: TYPOGRAPHY */}
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Innholdsmarginer ({localData.settings?.contentPadding ?? 24}px)</label>
-                </div>
-                <input 
-                  type="range"
-                  min="20"
-                  max="80"
-                  step="4"
-                  className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                  value={localData.settings?.contentPadding ?? 24}
-                  onChange={(e) => handleSettingsChange('contentPadding', parseInt(e.target.value))}
-                />
-                <p className="text-[10px] text-slate-400 italic">Juster luftigheten i den hvite hovedseksjonen.</p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Erfaringskolonne ({localData.settings?.experienceWidth ?? 96}px)</label>
-                </div>
-                <input 
-                  type="range"
-                  min="60"
-                  max="160"
-                  step="4"
-                  className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                  value={localData.settings?.experienceWidth ?? 96}
-                  onChange={(e) => handleSettingsChange('experienceWidth', parseInt(e.target.value))}
-                />
-                <p className="text-[10px] text-slate-400 italic">Juster bredden på firma-kolonnen i arbeidserfaring.</p>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 space-y-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Sidefelt-luftighet ({localData.settings?.sidebarPadding ?? 32}px)</label>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
+                    <Type size={14} />
                   </div>
-                  <input 
-                    type="range"
-                    min="16"
-                    max="64"
-                    step="4"
-                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                    value={localData.settings?.sidebarPadding ?? 32}
-                    onChange={(e) => handleSettingsChange('sidebarPadding', parseInt(e.target.value))}
-                  />
+                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Global Typografi</h3>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Seksjonsavstand ({localData.settings?.sectionSpacing ?? 40}px)</label>
+                <div className="space-y-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Overskrift Font</label>
+                      <select 
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"
+                        value={localData.settings?.headingFontFamily || 'Inter'}
+                        onChange={(e) => handleSettingsChange('headingFontFamily', e.target.value)}
+                      >
+                        <option value="Inter">Inter</option>
+                        <option value="Raleway">Raleway</option>
+                        <option value="Playfair Display">Playfair</option>
+                        <option value="Plus Jakarta Sans">Jakarta</option>
+                        <option value="Outfit">Outfit</option>
+                        <option value="EB Garamond">Garamond</option>
+                        <option value="Montserrat">Montserrat</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Brødtekst Font</label>
+                      <select 
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"
+                        value={localData.settings?.bodyFontFamily || 'Inter'}
+                        onChange={(e) => handleSettingsChange('bodyFontFamily', e.target.value)}
+                      >
+                        <option value="Inter">Inter</option>
+                        <option value="Open Sans">Open Sans</option>
+                        <option value="Plus Jakarta Sans">Jakarta</option>
+                        <option value="Outfit">Outfit</option>
+                        <option value="Roboto">Roboto</option>
+                        <option value="Lato">Lato</option>
+                      </select>
+                    </div>
                   </div>
-                  <input 
-                    type="range"
-                    min="20"
-                    max="100"
-                    step="4"
-                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                    value={localData.settings?.sectionSpacing ?? 40}
-                    onChange={(e) => handleSettingsChange('sectionSpacing', parseInt(e.target.value))}
-                  />
-                </div>
 
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Elementavstand ({localData.settings?.itemSpacing ?? 24}px)</label>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between">
+                      <span>Linjeavstand</span>
+                      <span className="text-indigo-600">{localData.settings?.lineHeight ?? 1.5}</span>
+                    </label>
+                    <input 
+                      type="range" min="1" max="2" step="0.05"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      value={localData.settings?.lineHeight ?? 1.5}
+                      onChange={(e) => handleSettingsChange('lineHeight', parseFloat(e.target.value))}
+                    />
                   </div>
-                  <input 
-                    type="range"
-                    min="8"
-                    max="64"
-                    step="4"
-                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                    value={localData.settings?.itemSpacing ?? 24}
-                    onChange={(e) => handleSettingsChange('itemSpacing', parseInt(e.target.value))}
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Topptekst-luftighet ({localData.settings?.headerSpacing ?? 48}px)</label>
-                  </div>
-                  <input
-                    type="range"
-                    min="16"
-                    max="100"
-                    step="4"
-                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                    value={localData.settings?.headerSpacing ?? 48}
-                    onChange={(e) => handleSettingsChange('headerSpacing', parseInt(e.target.value))}
-                  />
-                </div>
-
-                <div
-                  className="space-y-4"
-                  onMouseEnter={() => onHighlightSetting?.('fieldPadding')}
-                  onMouseLeave={() => onHighlightSetting?.(null)}
-                >
-                  <div className="flex justify-between items-center">
-                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Felt-padding ({localData.settings?.fieldPadding ?? 8}px)</label>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="32"
-                    step="2"
-                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                    value={localData.settings?.fieldPadding ?? 8}
-                    onChange={(e) => handleSettingsChange('fieldPadding', parseInt(e.target.value))}
-                  />
-                  <p className="text-[10px] text-slate-400 italic">Juster polstringen rundt hvert redigerbart felt (topptekst, erfaring, ferdigheter osv.).</p>
                 </div>
               </div>
             </div>
@@ -293,6 +269,92 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
 
           {section === 'personal' && (
             <div className="space-y-6">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="p-1 bg-blue-100 text-blue-700 rounded">
+                    <Type size={12} />
+                  </div>
+                  <h3 className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Typografi & Luft</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Navn Størrelse</span>
+                      <span className="text-blue-600">{localData.settings?.nameFontSize ?? 26}pt</span>
+                    </label>
+                    <input 
+                      type="range" min="12" max="48" step="1"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      value={localData.settings?.nameFontSize ?? 26}
+                      onChange={(e) => handleSettingsChange('nameFontSize', parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Tittel Størrelse</span>
+                      <span className="text-blue-600">{localData.settings?.titleFontSize ?? 9}pt</span>
+                    </label>
+                    <input 
+                      type="range" min="6" max="18" step="0.5"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      value={localData.settings?.titleFontSize ?? 9}
+                      onChange={(e) => handleSettingsChange('titleFontSize', parseFloat(e.target.value))}
+                    />
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-slate-200/50 grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between tracking-wider">
+                      <span>Header Topp-luft</span>
+                      <span className="text-blue-600">{localData.settings?.headerPaddingTop ?? 64}px</span>
+                    </label>
+                    <input 
+                      type="range" min="0" max="150" step="5"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      value={localData.settings?.headerPaddingTop ?? 64}
+                      onChange={(e) => handleSettingsChange('headerPaddingTop', parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between tracking-wider">
+                      <span>Kontaktfelt Luft</span>
+                      <span className="text-blue-600">{localData.settings?.headerContactGap ?? 24}px</span>
+                    </label>
+                    <input 
+                      type="range" min="8" max="48" step="2"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      value={localData.settings?.headerContactGap ?? 24}
+                      onChange={(e) => handleSettingsChange('headerContactGap', parseInt(e.target.value))}
+                    />
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-slate-200/50 grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between tracking-wider">
+                      <span>Navn til Tittel</span>
+                      <span className="text-blue-600">{localData.settings?.nameToTitleSpacing ?? 8}px</span>
+                    </label>
+                    <input 
+                      type="range" min="0" max="40" step="1"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      value={localData.settings?.nameToTitleSpacing ?? 8}
+                      onChange={(e) => handleSettingsChange('nameToTitleSpacing', parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between tracking-wider">
+                      <span>Tittel til Kontakt</span>
+                      <span className="text-blue-600">{localData.settings?.titleToContactSpacing ?? 32}px</span>
+                    </label>
+                    <input 
+                      type="range" min="0" max="80" step="2"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      value={localData.settings?.titleToContactSpacing ?? 32}
+                      onChange={(e) => handleSettingsChange('titleToContactSpacing', parseInt(e.target.value))}
+                    />
+                  </div>
+                </div>
+              </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Fullt navn</label>
                 <input 
@@ -318,6 +380,8 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
                   onChange={(e) => handlePersonalChange('summary', e.target.value)}
                 />
               </div>
+              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Sted</label>
@@ -336,130 +400,296 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
                   />
                 </div>
               </div>
-
-              <div className="pt-4 border-t border-slate-100 space-y-4">
-                <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fontstørrelser</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Navn ({localData.settings?.nameFontSize ?? 26}pt)</label>
-                    <input 
-                      type="range" min="12" max="48" step="1"
-                      className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                      value={localData.settings?.nameFontSize ?? 26}
-                      onChange={(e) => handleSettingsChange('nameFontSize', parseInt(e.target.value))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tittel ({localData.settings?.titleFontSize ?? 9}pt)</label>
-                    <input 
-                      type="range" min="6" max="18" step="0.5"
-                      className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                      value={localData.settings?.titleFontSize ?? 9}
-                      onChange={(e) => handleSettingsChange('titleFontSize', parseFloat(e.target.value))}
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 
           {section === 'experience' && (
-            <div className="space-y-8">
-                <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-4">
-                  <h3 className="text-[10px] font-bold text-indigo-900 uppercase tracking-widest flex items-center gap-2">
-                    Seksjonsfont
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[9px] font-bold text-indigo-700/60 uppercase">Overskrift ({localData.settings?.sectionTitleFontSize ?? 11}pt)</label>
-                      <input 
-                        type="range" min="8" max="20" step="0.5"
-                        className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                        value={localData.settings?.sectionTitleFontSize ?? 11}
-                        onChange={(e) => handleSettingsChange('sectionTitleFontSize', parseFloat(e.target.value))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[9px] font-bold text-indigo-700/60 uppercase">Brødtekst ({localData.settings?.bodyFontSize ?? 7.8}pt)</label>
-                      <input 
-                        type="range" min="6" max="14" step="0.2"
-                        className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                        value={localData.settings?.bodyFontSize ?? 7.8}
-                        onChange={(e) => handleSettingsChange('bodyFontSize', parseFloat(e.target.value))}
-                      />
-                    </div>
+            <div className="space-y-8 pb-10">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="p-1 bg-amber-100 text-amber-700 rounded">
+                    <Layout size={12} />
                   </div>
+                  <h3 className="text-[10px] font-black text-amber-900 uppercase tracking-widest">Layout & Stil</h3>
                 </div>
-              {localData.experience.map((exp, idx) => (
-                <div key={exp.id} className="p-5 bg-slate-50 rounded-2xl relative border border-slate-200">
-                  <button 
-                    onClick={() => removeExperience(exp.id)}
-                    className="absolute top-2 right-2 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <input 
-                      placeholder="Selskap"
-                      className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                      value={exp.company}
-                      onChange={(e) => updateExperience(exp.id, { company: e.target.value })}
-                    />
-                    <input 
-                      placeholder="Rolle"
-                      className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                      value={exp.role}
-                      onChange={(e) => updateExperience(exp.id, { role: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <input 
-                      placeholder="Periode"
-                      className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-                      value={exp.period}
-                      onChange={(e) => updateExperience(exp.id, { period: e.target.value })}
-                    />
-                    <input 
-                      placeholder="Sted"
-                      className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-                      value={exp.location}
-                      onChange={(e) => updateExperience(exp.id, { location: e.target.value })}
-                    />
-                  </div>
-                  <textarea 
-                    rows={3}
-                    placeholder="Beskrivelse"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm mb-4 resize-none"
-                    value={exp.description}
-                    onChange={(e) => updateExperience(exp.id, { description: e.target.value })}
-                  />
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kulepunkter (ett per linje)</label>
-                    <textarea 
-                      rows={4}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-mono leading-relaxed"
-                      value={exp.bullets.join('\n')}
-                      onChange={(e) => updateExperience(exp.id, { bullets: e.target.value.split('\n') })}
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Overskrift str.</span>
+                      <span className="text-amber-600">{localData.settings?.sectionTitleFontSize ?? 11}pt</span>
+                    </label>
+                    <input 
+                      type="range" min="8" max="20" step="0.5"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-amber-600"
+                      value={localData.settings?.sectionTitleFontSize ?? 11}
+                      onChange={(e) => handleSettingsChange('sectionTitleFontSize', parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Brødtekst str.</span>
+                      <span className="text-amber-600">{localData.settings?.bodyFontSize ?? 7.8}pt</span>
+                    </label>
+                    <input 
+                      type="range" min="6" max="14" step="0.2"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-amber-600"
+                      value={localData.settings?.bodyFontSize ?? 7.8}
+                      onChange={(e) => handleSettingsChange('bodyFontSize', parseFloat(e.target.value))}
                     />
                   </div>
                 </div>
-              ))}
-              <button 
-                onClick={addExperience}
-                className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest"
-              >
-                <Plus size={18} />
-                <span>Legg til erfaring</span>
-              </button>
+                <div className="pt-2 border-t border-slate-200/50 grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between tracking-wider">
+                      <span>Tittel-kolonne Bredde</span>
+                      <span className="text-amber-600">{localData.settings?.experienceWidth ?? 96}px</span>
+                    </label>
+                    <input 
+                      type="range" min="60" max="300" step="4"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-amber-600"
+                      value={localData.settings?.experienceWidth ?? 96}
+                      onChange={(e) => handleSettingsChange('experienceWidth', parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between tracking-wider">
+                      <span>Vertikal avstand</span>
+                      <span className="text-amber-600">{localData.settings?.itemSpacing ?? 24}px</span>
+                    </label>
+                    <input 
+                      type="range" min="8" max="64" step="4"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-amber-600"
+                      value={localData.settings?.itemSpacing ?? 24}
+                      onChange={(e) => handleSettingsChange('itemSpacing', parseInt(e.target.value))}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Arbeidserfaring</h3>
+                </div>
+                {localData.experience.map((exp) => (
+                  <div key={exp.id} className="p-5 bg-slate-50 rounded-2xl relative border border-slate-200">
+                    <button 
+                      onClick={() => removeExperience(exp.id)}
+                      className="absolute top-2 right-2 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <input 
+                        placeholder="Selskap"
+                        className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        value={exp.company}
+                        onChange={(e) => updateExperience(exp.id, { company: e.target.value })}
+                      />
+                      <input 
+                        placeholder="Rolle"
+                        className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        value={exp.role}
+                        onChange={(e) => updateExperience(exp.id, { role: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <input 
+                        placeholder="Periode"
+                        className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+                        value={exp.period}
+                        onChange={(e) => updateExperience(exp.id, { period: e.target.value })}
+                      />
+                      <input 
+                        placeholder="Sted"
+                        className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+                        value={exp.location}
+                        onChange={(e) => updateExperience(exp.id, { location: e.target.value })}
+                      />
+                    </div>
+                    <textarea 
+                      rows={3}
+                      placeholder="Beskrivelse"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm mb-4 resize-none"
+                      value={exp.description}
+                      onChange={(e) => updateExperience(exp.id, { description: e.target.value })}
+                    />
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kulepunkter (ett per linje)</label>
+                      <textarea 
+                        rows={4}
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-mono leading-relaxed"
+                        value={exp.bullets.join('\n')}
+                        onChange={(e) => updateExperience(exp.id, { bullets: e.target.value.split('\n') })}
+                      />
+                    </div>
+                  </div>
+                ))}
+                <button 
+                  onClick={addExperience}
+                  className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest"
+                >
+                  <Plus size={18} />
+                  <span>Legg til erfaring</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {section === 'projects' && (
+            <div className="space-y-8 pb-10">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="p-1 bg-amber-100 text-amber-700 rounded">
+                    <Layout size={12} />
+                  </div>
+                  <h3 className="text-[10px] font-black text-amber-900 uppercase tracking-widest">Layout & Stil</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Overskrift str.</span>
+                      <span className="text-amber-600">{localData.settings?.sectionTitleFontSize ?? 11}pt</span>
+                    </label>
+                    <input 
+                      type="range" min="8" max="20" step="0.5"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-amber-600"
+                      value={localData.settings?.sectionTitleFontSize ?? 11}
+                      onChange={(e) => handleSettingsChange('sectionTitleFontSize', parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Brødtekst str.</span>
+                      <span className="text-amber-600">{localData.settings?.bodyFontSize ?? 7.8}pt</span>
+                    </label>
+                    <input 
+                      type="range" min="6" max="14" step="0.2"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-amber-600"
+                      value={localData.settings?.bodyFontSize ?? 7.8}
+                      onChange={(e) => handleSettingsChange('bodyFontSize', parseFloat(e.target.value))}
+                    />
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-slate-200/50 grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between tracking-wider">
+                      <span>Tittel-kolonne Bredde</span>
+                      <span className="text-amber-600">{localData.settings?.projectsWidth ?? 180}px</span>
+                    </label>
+                    <input 
+                      type="range" min="100" max="450" step="10"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-amber-600"
+                      value={localData.settings?.projectsWidth ?? 180}
+                      onChange={(e) => handleSettingsChange('projectsWidth', parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between tracking-wider">
+                      <span>Vertikal avstand</span>
+                      <span className="text-amber-600">{localData.settings?.itemSpacing ?? 24}px</span>
+                    </label>
+                    <input 
+                      type="range" min="8" max="64" step="4"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-amber-600"
+                      value={localData.settings?.itemSpacing ?? 24}
+                      onChange={(e) => handleSettingsChange('itemSpacing', parseInt(e.target.value))}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between tracking-wider">
+                    <span>Beskrivelse Bredde</span>
+                    <span className="text-amber-600">{localData.settings?.projectsDescriptionWidth ?? 400}px</span>
+                  </label>
+                  <input 
+                    type="range" min="200" max="600" step="10"
+                    className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-amber-600"
+                    value={localData.settings?.projectsDescriptionWidth ?? 400}
+                    onChange={(e) => handleSettingsChange('projectsDescriptionWidth', parseInt(e.target.value))}
+                  />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Utvalgte prosjekter</h3>
+                </div>
+                {localData.projects.map((proj) => (
+                  <div key={proj.id} className="p-5 bg-slate-50 rounded-2xl relative border border-slate-200">
+                    <button 
+                      onClick={() => removeProject(proj.id)}
+                      className="absolute top-2 right-2 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <input 
+                        placeholder="Prosjektnavn"
+                        className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        value={proj.title}
+                        onChange={(e) => updateProjects(proj.id, { title: e.target.value })}
+                      />
+                      <input 
+                        placeholder="Kunde"
+                        className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        value={proj.client}
+                        onChange={(e) => updateProjects(proj.id, { client: e.target.value })}
+                      />
+                    </div>
+                    <textarea 
+                      rows={3}
+                      placeholder="Beskrivelse"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm mb-4 resize-none"
+                      value={proj.description}
+                      onChange={(e) => updateProjects(proj.id, { description: e.target.value })}
+                    />
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kulepunkter (ett per linje)</label>
+                      <textarea 
+                        rows={4}
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-mono leading-relaxed"
+                        value={proj.bullets.join('\n')}
+                        onChange={(e) => updateProjects(proj.id, { bullets: e.target.value.split('\n') })}
+                      />
+                    </div>
+                  </div>
+                ))}
+                <button 
+                  onClick={addProject}
+                  className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest"
+                >
+                  <Plus size={18} />
+                  <span>Legg til prosjekt</span>
+                </button>
+              </div>
             </div>
           )}
 
           {section === 'skills' && (
             <div className="space-y-6">
-              <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-4">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="p-1 bg-indigo-100 text-indigo-700 rounded">
+                    <Layout size={12} />
+                  </div>
+                  <h3 className="text-[10px] font-black text-indigo-900 uppercase tracking-widest">Sidefelt Layout</h3>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[9px] font-bold text-indigo-700/60 uppercase">Overskrift ({localData.settings?.sidebarTitleFontSize ?? 10}pt)</label>
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Sidefelt Bredde</span>
+                      <span className="text-indigo-600">{localData.settings?.sidebarWidth ?? 35}%</span>
+                    </label>
+                    <input 
+                      type="range" min="20" max="50" step="1"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      value={localData.settings?.sidebarWidth ?? 35}
+                      onChange={(e) => handleSettingsChange('sidebarWidth', parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Overskrift str.</span>
+                      <span className="text-indigo-600">{localData.settings?.sidebarTitleFontSize ?? 10}pt</span>
+                    </label>
                     <input 
                       type="range" min="8" max="16" step="0.5"
                       className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
@@ -467,15 +697,18 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
                       onChange={(e) => handleSettingsChange('sidebarTitleFontSize', parseFloat(e.target.value))}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-bold text-indigo-700/60 uppercase">Tekst ({localData.settings?.sidebarBodyFontSize ?? 8.5}pt)</label>
-                    <input 
-                      type="range" min="6" max="12" step="0.2"
-                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                      value={localData.settings?.sidebarBodyFontSize ?? 8.5}
-                      onChange={(e) => handleSettingsChange('sidebarBodyFontSize', parseFloat(e.target.value))}
-                    />
-                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                    <span>Brødtekst str.</span>
+                    <span className="text-indigo-600">{localData.settings?.sidebarBodyFontSize ?? 8.5}pt</span>
+                  </label>
+                  <input 
+                    type="range" min="6" max="12" step="0.2"
+                    className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    value={localData.settings?.sidebarBodyFontSize ?? 8.5}
+                    onChange={(e) => handleSettingsChange('sidebarBodyFontSize', parseFloat(e.target.value))}
+                  />
                 </div>
               </div>
               <div className="space-y-4">
@@ -486,6 +719,233 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
                   value={localData.skills.join('\n')}
                   onChange={(e) => updateSkills(e.target.value)}
                 />
+              </div>
+            </div>
+          )}
+
+          {section === 'education' && (
+            <div className="space-y-8">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="p-1 bg-indigo-100 text-indigo-700 rounded">
+                    <Layout size={12} />
+                  </div>
+                  <h3 className="text-[10px] font-black text-indigo-900 uppercase tracking-widest">Sidefelt Layout</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Sidefelt Bredde</span>
+                      <span className="text-indigo-600">{localData.settings?.sidebarWidth ?? 35}%</span>
+                    </label>
+                    <input 
+                      type="range" min="20" max="50" step="1"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      value={localData.settings?.sidebarWidth ?? 35}
+                      onChange={(e) => handleSettingsChange('sidebarWidth', parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Overskrift str.</span>
+                      <span className="text-indigo-600">{localData.settings?.sidebarTitleFontSize ?? 10}pt</span>
+                    </label>
+                    <input 
+                      type="range" min="8" max="16" step="0.5"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      value={localData.settings?.sidebarTitleFontSize ?? 10}
+                      onChange={(e) => handleSettingsChange('sidebarTitleFontSize', parseFloat(e.target.value))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {localData.education.map((edu) => (
+                  <div key={edu.id} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <input 
+                        placeholder="Grad / Utdanning"
+                        className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold"
+                        value={edu.degree}
+                        onChange={(e) => updateEducation(edu.id, { degree: e.target.value })}
+                      />
+                      <input 
+                        placeholder="Skole / Universitet"
+                        className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm"
+                        value={edu.school}
+                        onChange={(e) => updateEducation(edu.id, { school: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <input 
+                        placeholder="Periode (f.eks. 2015 - 2018)"
+                        className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm"
+                        value={edu.period}
+                        onChange={(e) => updateEducation(edu.id, { period: e.target.value })}
+                      />
+                      <input 
+                        placeholder="Detaljer"
+                        className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm"
+                        value={edu.details}
+                        onChange={(e) => updateEducation(edu.id, { details: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                ))}
+                <button 
+                  onClick={addEducation}
+                  className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest"
+                >
+                  <Plus size={18} />
+                  <span>Legg til utdanning</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {section === 'languages' && (
+            <div className="space-y-8">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="p-1 bg-indigo-100 text-indigo-700 rounded">
+                    <Layout size={12} />
+                  </div>
+                  <h3 className="text-[10px] font-black text-indigo-900 uppercase tracking-widest">Sidefelt Layout</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Sidefelt Bredde</span>
+                      <span className="text-indigo-600">{localData.settings?.sidebarWidth ?? 35}%</span>
+                    </label>
+                    <input 
+                      type="range" min="20" max="50" step="1"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      value={localData.settings?.sidebarWidth ?? 35}
+                      onChange={(e) => handleSettingsChange('sidebarWidth', parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Overskrift str.</span>
+                      <span className="text-indigo-600">{localData.settings?.sidebarTitleFontSize ?? 10}pt</span>
+                    </label>
+                    <input 
+                      type="range" min="8" max="16" step="0.5"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      value={localData.settings?.sidebarTitleFontSize ?? 10}
+                      onChange={(e) => handleSettingsChange('sidebarTitleFontSize', parseFloat(e.target.value))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {localData.languages.map((lang, index) => (
+                  <div key={index} className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <input 
+                      placeholder="Språk"
+                      className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm"
+                      value={lang.name}
+                      onChange={(e) => {
+                        const newLangs = [...localData.languages];
+                        newLangs[index].name = e.target.value;
+                        setLocalData({ ...localData, languages: newLangs });
+                      }}
+                    />
+                    <input 
+                      placeholder="Nivå"
+                      className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm"
+                      value={lang.level}
+                      onChange={(e) => {
+                        const newLangs = [...localData.languages];
+                        newLangs[index].level = e.target.value;
+                        setLocalData({ ...localData, languages: newLangs });
+                      }}
+                    />
+                  </div>
+                ))}
+                <button 
+                  onClick={() => setLocalData({ ...localData, languages: [...localData.languages, { name: '', level: '' }] })}
+                  className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 flex items-center justify-center gap-2 font-bold text-[10px] uppercase tracking-widest"
+                >
+                  <Plus size={16} />
+                  <span>Legg til språk</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {section === 'links' && (
+            <div className="space-y-8">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="p-1 bg-indigo-100 text-indigo-700 rounded">
+                    <Layout size={12} />
+                  </div>
+                  <h3 className="text-[10px] font-black text-indigo-900 uppercase tracking-widest">Sidefelt Layout</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Sidefelt Bredde</span>
+                      <span className="text-indigo-600">{localData.settings?.sidebarWidth ?? 35}%</span>
+                    </label>
+                    <input 
+                      type="range" min="20" max="50" step="1"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      value={localData.settings?.sidebarWidth ?? 35}
+                      onChange={(e) => handleSettingsChange('sidebarWidth', parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase flex justify-between">
+                      <span>Overskrift str.</span>
+                      <span className="text-indigo-600">{localData.settings?.sidebarTitleFontSize ?? 10}pt</span>
+                    </label>
+                    <input 
+                      type="range" min="8" max="16" step="0.5"
+                      className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      value={localData.settings?.sidebarTitleFontSize ?? 10}
+                      onChange={(e) => handleSettingsChange('sidebarTitleFontSize', parseFloat(e.target.value))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {localData.links.map((link, index) => (
+                  <div key={index} className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <input 
+                      placeholder="Label (f.eks. LinkedIn)"
+                      className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm"
+                      value={link.label}
+                      onChange={(e) => {
+                        const newLinks = [...localData.links];
+                        newLinks[index].label = e.target.value;
+                        setLocalData({ ...localData, links: newLinks });
+                      }}
+                    />
+                    <input 
+                      placeholder="URL"
+                      className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm"
+                      value={link.url}
+                      onChange={(e) => {
+                        const newLinks = [...localData.links];
+                        newLinks[index].url = e.target.value;
+                        setLocalData({ ...localData, links: newLinks });
+                      }}
+                    />
+                  </div>
+                ))}
+                <button 
+                  onClick={() => setLocalData({ ...localData, links: [...localData.links, { label: '', url: '' }] })}
+                  className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 flex items-center justify-center gap-2 font-bold text-[10px] uppercase tracking-widest"
+                >
+                  <Plus size={16} />
+                  <span>Legg til link</span>
+                </button>
               </div>
             </div>
           )}

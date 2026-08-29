@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Mail, MapPin, Phone, Linkedin, ExternalLink, Camera, MoveHorizontal, MoveVertical, GripVertical, GripHorizontal } from 'lucide-react';
+import { Mail, MapPin, Phone, ExternalLink, Camera, MoveHorizontal, MoveVertical, GripVertical, GripHorizontal } from 'lucide-react';
 import { CVData } from '../types';
 import { cn } from '../lib/utils';
 
@@ -21,11 +21,14 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
   const sidebarWidth = data.settings?.sidebarWidth || 35;
   const contentPadding = data.settings?.contentPadding ?? 16;
   const experienceWidth = data.settings?.experienceWidth ?? 96;
+  const projectsWidth = data.settings?.projectsWidth ?? 180;
   const sidebarPadding = data.settings?.sidebarPadding ?? 32;
   const sectionSpacing = data.settings?.sectionSpacing ?? 40;
   const itemSpacing = data.settings?.itemSpacing ?? 24;
   const headerSpacing = data.settings?.headerSpacing ?? 48;
   const fieldPadding = data.settings?.fieldPadding ?? 8;
+  const pageWidth = data.settings?.pageWidth ?? 1000;
+  const projectsDescriptionWidth = data.settings?.projectsDescriptionWidth ?? 400;
   
   const nameFontSize = data.settings?.nameFontSize ?? 26;
   const titleFontSize = data.settings?.titleFontSize ?? 9;
@@ -33,6 +36,15 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
   const bodyFontSize = data.settings?.bodyFontSize ?? 7.8;
   const sidebarTitleFontSize = data.settings?.sidebarTitleFontSize ?? 10;
   const sidebarBodyFontSize = data.settings?.sidebarBodyFontSize ?? 8.5;
+  
+  const headingFontFamily = data.settings?.headingFontFamily ?? 'Raleway';
+  const bodyFontFamily = data.settings?.bodyFontFamily ?? 'Open Sans';
+  const lineHeight = data.settings?.lineHeight ?? 1.5;
+  const nameToTitleSpacing = data.settings?.nameToTitleSpacing ?? 8;
+  const titleToContactSpacing = data.settings?.titleToContactSpacing ?? 32;
+  const headerVerticalPadding = data.settings?.headerVerticalPadding ?? 64;
+  const headerPaddingTop = data.settings?.headerPaddingTop ?? 64;
+  const headerContactGap = data.settings?.headerContactGap ?? 24;
 
   const mainWidth = 100 - sidebarWidth;
 
@@ -47,15 +59,14 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
       let newValue = startValue;
 
       if (activeHandle === 'sidebarWidth') {
-        // Approximate calculation based on container width (roughly 1000px)
         const percentDelta = (deltaX / 1000) * 100;
         newValue = Math.max(20, Math.min(50, startValue + percentDelta));
       } else if (activeHandle === 'contentPadding' || activeHandle === 'sidebarPadding') {
         newValue = Math.max(8, Math.min(80, startValue + deltaX));
       } else if (activeHandle === 'sectionSpacing' || activeHandle === 'itemSpacing' || activeHandle === 'headerSpacing') {
         newValue = Math.max(4, Math.min(120, startValue + deltaY));
-      } else if (activeHandle === 'experienceWidth') {
-        newValue = Math.max(60, Math.min(250, startValue + deltaX));
+      } else if (activeHandle === 'experienceWidth' || activeHandle === 'projectsWidth' || activeHandle === 'projectsDescriptionWidth' || activeHandle === 'pageWidth') {
+        newValue = Math.max(activeHandle === 'pageWidth' ? 600 : 60, Math.min(activeHandle === 'pageWidth' ? 1200 : 800, startValue + deltaX));
       }
 
       onUpdateData({
@@ -119,7 +130,25 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
   };
 
   return (
-    <div className="flex flex-col gap-12 w-full max-w-[1000px] mx-auto pb-20 print:gap-0 print:pb-0 print:max-w-none print-document-pages">
+    <div 
+      className="flex flex-col gap-12 w-full mx-auto pb-20 print:gap-0 print:pb-0 print:max-w-none print-document-pages group/page"
+      style={{ 
+        '--heading-font': `"${headingFontFamily}", sans-serif`, 
+        '--body-font': `"${bodyFontFamily}", sans-serif`,
+        lineHeight: lineHeight,
+        maxWidth: `${pageWidth}px`
+      } as React.CSSProperties}
+    >
+      {/* Page Width Handle */}
+      <div 
+        className="absolute top-0 -right-2 w-4 h-full cursor-col-resize opacity-0 group-hover/page:opacity-100 hover:bg-indigo-500/10 transition-all z-50 flex items-center justify-center print:hidden"
+        onMouseDown={(e) => startDragging(e, 'pageWidth', pageWidth)}
+        title="Juster sidebredde"
+      >
+        <div className="bg-indigo-600 text-white rounded p-0.5 shadow-md">
+          <GripVertical size={14} />
+        </div>
+      </div>
       {/* PAGE 1 */}
       <div className="bg-white shadow-2xl w-full min-h-[1414px] flex flex-col md:flex-row text-[#333] font-sans overflow-hidden ring-1 ring-slate-200 print:shadow-none print:ring-0 print:break-after-page print-document-page">
         {/* Left Sidebar */}
@@ -292,7 +321,14 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
           <section 
             onClick={() => onEditSection('personal')}
             className={cn("relative group/header rounded hover:bg-indigo-50/50 cursor-pointer border-2 border-transparent hover:border-indigo-200 transition-all flex flex-col", fieldHighlight)}
-            style={{ padding: `${fieldPadding}px`, margin: `-${fieldPadding}px`, marginBottom: `${headerSpacing}px` }}
+            style={{ 
+              paddingTop: `${headerPaddingTop}px`, 
+              paddingBottom: `${headerVerticalPadding / 2}px`,
+              paddingLeft: `${fieldPadding}px`,
+              paddingRight: `${fieldPadding}px`,
+              margin: `-${fieldPadding}px`, 
+              marginBottom: `${headerSpacing}px` 
+            }}
           >
             {/* Header Spacing Handle */}
             <div 
@@ -303,7 +339,7 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
             </div>
 
             <div className="absolute top-2 right-2 opacity-0 group-hover/header:opacity-100 bg-indigo-600 text-white text-[10px] px-2 py-1 rounded-full uppercase font-bold tracking-tighter">Edit Header</div>
-            <div className="mb-2">
+            <div style={{ marginBottom: `${nameToTitleSpacing}px` }}>
               <h1 
                 className="font-heading font-light text-[#333] tracking-[0.1em] leading-tight"
                 style={{ fontSize: `${nameFontSize}pt` }}
@@ -319,13 +355,16 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
             </div>
 
             <p 
-              className="font-heading font-thin text-gray-500 tracking-[0.4em] uppercase mb-8"
-              style={{ fontSize: `${titleFontSize}pt` }}
+              className="font-heading font-thin text-gray-500 tracking-[0.4em] uppercase"
+              style={{ fontSize: `${titleFontSize}pt`, marginBottom: `${titleToContactSpacing}px` }}
             >
               {data.personal.title}
             </p>
 
-            <div className="flex flex-wrap gap-6 font-body text-[8pt] text-[#333] items-center">
+            <div 
+              className="flex flex-wrap font-body text-[8pt] text-[#333] items-center"
+              style={{ gap: `${headerContactGap}px` }}
+            >
               <div className="flex items-center gap-1.5">
                 <MapPin size={12} className="text-[#333]" />
                 <span>{data.personal.contact.location}</span>
@@ -386,6 +425,7 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
                       className="absolute inset-y-0 right-0 w-2 cursor-col-resize opacity-0 group-hover/col-width:opacity-100 hover:bg-indigo-500/20 transition-all z-30"
                       onMouseDown={(e) => startDragging(e, 'experienceWidth', experienceWidth)}
                     ></div>
+                    
                     <span 
                       className="font-body font-semibold text-[#333] leading-tight uppercase"
                       style={{ fontSize: `${bodyFontSize * 1.09}pt` }}
@@ -462,14 +502,14 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
           >
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-indigo-600 text-white text-[10px] px-2 py-1 rounded-full uppercase font-bold tracking-tighter">Edit Projects</div>
             <h2 
-              className="font-heading font-semibold tracking-widest border-b-2 border-[#333] pb-2 group-hover:text-indigo-600 uppercase" 
+              className="font-heading font-semibold tracking-widest pb-2 group-hover:text-indigo-600 uppercase" 
               style={{ marginBottom: `${sectionSpacing}px`, fontSize: `${sectionTitleFontSize}pt` }}
             >
               Utvalgte prosjekter
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: `${itemSpacing}px` }}>
               {data.projects.map((proj) => (
-                <div key={proj.id} className="flex gap-4 relative group/proj-item">
+                <div key={proj.id} className="flex gap-6 relative group/proj-item">
                   {/* Item Spacing Handle */}
                   <div 
                     className="absolute -bottom-1 left-0 right-0 h-4 cursor-row-resize opacity-0 group-hover/proj-item:opacity-100 transition-all z-20 flex items-center justify-center pointer-events-none"
@@ -479,25 +519,42 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
                         onMouseDown={(e) => startDragging(e, 'itemSpacing', itemSpacing)}
                       ></div>
                   </div>
-
-                  {/* Left Column: Project Name & Client */}
-                  <div className="w-[180px] shrink-0 text-right">
+                  
+                  {/* Left Column: Title & Client */}
+                  <div 
+                    className="shrink-0 flex flex-col pt-1 relative group/col-width"
+                    style={{ width: `${projectsWidth}px` }}
+                  >
+                    <div 
+                      className="absolute inset-y-0 right-0 w-2 cursor-col-resize opacity-0 group-hover/col-width:opacity-100 hover:bg-indigo-500/20 transition-all z-30"
+                      onMouseDown={(e) => startDragging(e, 'projectsWidth', projectsWidth)}
+                    ></div>
+                    
                     <h3 
-                      className="font-heading font-semibold text-[#333] uppercase leading-tight"
-                      style={{ fontSize: `${bodyFontSize * 1.34}pt` }}
+                      className="font-heading font-black text-[#333] tracking-tight leading-snug"
+                      style={{ fontSize: `${bodyFontSize * 1.6}pt` }}
                     >
                       {proj.title}
                     </h3>
                     <p 
-                      className="font-body text-gray-400 mt-1 uppercase tracking-wider"
-                      style={{ fontSize: `${bodyFontSize * 0.96}pt` }}
+                      className="font-body text-gray-500 font-bold uppercase tracking-tighter mt-1"
+                      style={{ fontSize: `${bodyFontSize * 0.8}pt` }}
                     >
                       {proj.client}
                     </p>
                   </div>
 
                   {/* Right Column: Description */}
-                  <div className="flex-1">
+                  <div 
+                    className="flex-1 relative group/desc-width"
+                    style={{ maxWidth: `${projectsDescriptionWidth}px` }}
+                  >
+                    {/* Description Width Handle */}
+                    <div 
+                      className="absolute inset-y-0 right-0 w-2 cursor-col-resize opacity-0 group-hover/desc-width:opacity-100 hover:bg-indigo-500/20 transition-all z-30"
+                      onMouseDown={(e) => startDragging(e, 'projectsDescriptionWidth', projectsDescriptionWidth)}
+                    ></div>
+
                     <p 
                       className="font-body text-[#444] leading-relaxed font-normal"
                       style={{ fontSize: `${bodyFontSize}pt` }}
