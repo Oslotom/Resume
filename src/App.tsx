@@ -1,20 +1,16 @@
-import React, { useState, useEffect, MouseEvent } from 'react';
+import React, { useState, useEffect, MouseEvent, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Plus,
-  History,
   Save,
   LogOut,
   LogIn,
-  ChevronRight,
   FileText,
-  Trash2,
-  Clock,
   Layout,
   Download
 } from 'lucide-react';
 import { onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
-import { auth, signIn, signOut, saveCVVersion, updateCVVersion, deleteCVVersion, db } from './lib/firebase';
+import { saveCVVersion, updateCVVersion, deleteCVVersion, db } from './lib/firebase';
 import { CVData, CVVersion } from './types';
 import { initialCVData } from './initialData';
 import { CVTemplate } from './variants';
@@ -23,32 +19,34 @@ import CVEditor from './components/CVEditor';
 import ManagementPage from './components/ManagementPage';
 import { cn } from './lib/utils';
 
+const LOCAL_USER = {
+  uid: 'tom',
+  displayName: 'Tom',
+  photoURL: 'https://ui-avatars.com/api/?name=Tom+Haugeplass&background=4f46e5&color=fff'
+};
+
+const AUTH_KEY = 'cv_auth';
+
 export default function App() {
   const [view, setView] = useState<'editor' | 'management'>('editor');
 
-  const [user, setUser] = useState(auth.currentUser);
-  const [authReady, setAuthReady] = useState(false);
+  const [user, setUser] = useState<{ uid: string; displayName: string; photoURL: string } | null>(() => {
+    try {
+      return localStorage.getItem(AUTH_KEY) === '1' ? LOCAL_USER : null;
+    } catch {
+      return null;
+    }
+  });
   const [versions, setVersions] = useState<CVVersion[]>([]);
   const [currentVersion, setCurrentVersion] = useState<CVVersion | null>(null);
   const [cvData, setCvData] = useState<CVData>(initialCVData);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'preview' | 'versions'>('preview');
   const [highlightSetting, setHighlightSetting] = useState<string | null>(null);
-  const [loginLoading, setLoginLoading] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((u) => {
-      setUser(u);
-      setAuthReady(true);
-      if (!u) {
-        setVersions([]);
-        setCurrentVersion(null);
-        setCvData(initialCVData);
-      }
-    });
-    return unsubscribe;
-  }, []);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -59,37 +57,52 @@ export default function App() {
       orderBy('updatedAt', 'desc')
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const v = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CVVersion));
-      setVersions(v);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const v = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CVVersion));
+        setVersions(v);
+      },
+      () => {
+        // Firestore may require real auth — ignore errors, versions stay local-empty
+      }
+    );
 
     return unsubscribe;
   }, [user]);
 
-  const handleLogin = async () => {
-    setLoginLoading(true);
-    try {
-      await signIn();
-    } catch (e) {
-      console.error(e);
-      alert('Innlogging feilet. Prøv igjen.');
-    } finally {
-      setLoginLoading(false);
+  const handleLogin = (e: FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    if (username.trim().toLowerCase() === 'tom' && password === 'basiri') {
+      localStorage.setItem(AUTH_KEY, '1');
+      setUser(LOCAL_USER);
+      setUsername('');
+      setPassword('');
+    } else {
+      setLoginError('Feil brukernavn eller passord');
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem(AUTH_KEY);
+    setUser(null);
+    setVersions([]);
+    setCurrentVersion(null);
+    setCvData(initialCVData);
+    setView('editor');
+  };
+
   const handleSaveAsNew = async () => {
-    if (!user) {
-      alert("Du må logge inn for å lagre versjoner.");
-      return;
-    }
+    if (!user) return;
     const name = prompt("Navn på versjon (f.eks. 'Entur – Team Automat'):");
     if (!name) return;
 
     setIsSaving(true);
     try {
       await saveCVVersion(user.uid, name, cvData);
+    } catch {
+      alert('Kunne ikke lagre til skyen. Sjekk Firebase-regler.');
     } finally {
       setIsSaving(false);
     }
@@ -104,6 +117,8 @@ export default function App() {
     setIsSaving(true);
     try {
       await updateCVVersion(currentVersion.id, currentVersion.name, cvData);
+    } catch {
+      alert('Kunne ikke lagre til skyen. Sjekk Firebase-regler.');
     } finally {
       setIsSaving(false);
     }
@@ -112,12 +127,11 @@ export default function App() {
   const handleSelectVersion = (v: CVVersion) => {
     setCurrentVersion(v);
     setCvData(v.data);
-    setActiveTab('preview');
   };
 
   const handleLoadTemplate = (template: CVTemplate) => {
     setCurrentVersion(null);
-    setCvData(JSON.parse(JSON.stringify(template.data))); // deep copy
+    setCvData(JSON.parse(JSON.stringify(template.data)));
     setView('editor');
   };
 
@@ -125,27 +139,7 @@ export default function App() {
     window.print();
   };
 
-  const handleDelete = async (e: MouseEvent, id: string) => {
-    e.stopPropagation();
-    if (confirm("Er du sikker på at du vil slette denne versjonen?")) {
-      await deleteCVVersion(id);
-      if (currentVersion?.id === id) {
-        setCurrentVersion(null);
-        setCvData(initialCVData);
-      }
-    }
-  };
-
-  // Loading while Firebase restores session
-  if (!authReady) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans">
-        <div className="text-slate-400 text-sm font-medium">Laster...</div>
-      </div>
-    );
-  }
-
-  // Simple login gate
+  // Simple login screen
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans p-6">
@@ -153,9 +147,9 @@ export default function App() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="w-full max-w-sm bg-white rounded-3xl border border-slate-200 shadow-xl p-10 text-center space-y-8"
+          className="w-full max-w-sm bg-white rounded-3xl border border-slate-200 shadow-xl p-10 space-y-8"
         >
-          <div className="space-y-3">
+          <div className="text-center space-y-3">
             <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl mx-auto shadow-lg shadow-indigo-200">
               C
             </div>
@@ -167,14 +161,43 @@ export default function App() {
             </p>
           </div>
 
-          <button
-            onClick={handleLogin}
-            disabled={loginLoading}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-indigo-600 text-white rounded-2xl text-sm font-bold shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-[0.98] disabled:opacity-60"
-          >
-            <LogIn size={18} />
-            {loginLoading ? 'Logger inn...' : 'Logg inn med Google'}
-          </button>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Brukernavn</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Brukernavn"
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Passord</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Passord"
+              />
+            </div>
+
+            {loginError && (
+              <p className="text-red-500 text-xs font-semibold text-center">{loginError}</p>
+            )}
+
+            <button
+              type="submit"
+              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-indigo-600 text-white rounded-2xl text-sm font-bold shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-[0.98]"
+            >
+              <LogIn size={18} />
+              Logg inn
+            </button>
+          </form>
         </motion.div>
       </div>
     );
@@ -193,7 +216,11 @@ export default function App() {
         onDeleteVersion={(id) => {
           const del = async () => {
             if (confirm("Er du sikker på at du vil slette denne versjonen?")) {
-              await deleteCVVersion(id);
+              try {
+                await deleteCVVersion(id);
+              } catch {
+                // ignore
+              }
               if (currentVersion?.id === id) {
                 setCurrentVersion(null);
                 setCvData(initialCVData);
@@ -283,12 +310,12 @@ export default function App() {
           
           <div className="flex items-center gap-3">
             <img 
-              src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`}
+              src={user.photoURL}
               className="w-8 h-8 rounded-full border"
               alt="Avatar"
             />
             <button 
-              onClick={() => signOut()}
+              onClick={handleLogout}
               className="p-2 text-gray-500 hover:text-red-500 transition-colors"
               title="Logg ut"
             >
