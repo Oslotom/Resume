@@ -69,7 +69,7 @@ export default function App() {
       alert("Du må logge inn for å lagre versjoner.");
       return;
     }
-    const name = prompt("Navn på versjon (f.eks. 'Tech Focus'):");
+    const name = prompt("Navn på versjon (f.eks. 'Entur – Team Automat'):");
     if (!name) return;
 
     setIsSaving(true);
@@ -242,14 +242,18 @@ export default function App() {
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-4">
-              {/* Login button removed */}
-            </div>
+            <button
+              onClick={() => signIn()}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all active:scale-95"
+            >
+              <LogIn size={16} />
+              Logg inn for å lagre
+            </button>
           )}
         </div>
       </nav>
 
-      <main className="flex-1 flex overflow-hidden print:overflow-visible print:block">
+      <main className="flex-1 flex overflow-hidden print:overflow-visible print:block pb-24">
         {/* Content View */}
         <div className="flex-1 overflow-y-auto p-12 bg-slate-200/50 scroll-smooth flex justify-center print:overflow-visible print:h-auto print:p-0 print:bg-white print:block">
           <motion.div
@@ -267,6 +271,58 @@ export default function App() {
           </motion.div>
         </div>
       </main>
+
+      {/* Floating save bar */}
+      <div className="print:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+          <div className="text-sm text-slate-500 font-medium truncate">
+            {currentVersion ? (
+              <>
+                Aktiv versjon: <span className="text-indigo-700 font-bold">{currentVersion.name}</span>
+              </>
+            ) : (
+              <span>Ulagret mal — lagre for å beholde endringer</span>
+            )}
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={handleDownloadPdf}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:border-indigo-200 hover:text-indigo-600 transition-all"
+            >
+              <Download size={16} />
+              PDF
+            </button>
+            {user ? (
+              <>
+                <button
+                  onClick={handleSaveAsNew}
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white border border-indigo-200 text-indigo-700 rounded-xl text-sm font-semibold hover:bg-indigo-50 transition-all disabled:opacity-50"
+                >
+                  <Plus size={16} />
+                  Lagre som ny
+                </button>
+                <button
+                  onClick={handleUpdate}
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  <Save size={16} />
+                  {isSaving ? 'Lagrer...' : currentVersion ? 'Lagre endringer' : 'Lagre versjon'}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => signIn()}
+                className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-all"
+              >
+                <LogIn size={16} />
+                Logg inn for å lagre
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Editor Modal */}
       <AnimatePresence>
