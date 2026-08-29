@@ -29,9 +29,9 @@ export const initialCVData: CVData = {
   },
   personal: {
     name: "TOM HAUGEPLASS",
-    title: "APPLIKASJONSFORVALTNING · LEVERANDØROPPFØLGING · IT-KOORDINERING",
+    title: "PRODUKTLEDER · BRUKERINNSIKT · TVERRFAGLIG TEAMLEDELSE",
     subtitle: "OM MEG",
-    summary: "Erfaren IT-koordinator med bakgrunn som produktleder, med lang fartstid i å følge opp applikasjoner, leverandører, systemeiere og brukere på tvers av utvikling, drift, support og forretning. Har hatt operativt ansvar for risikovurdering, avhengigheter, testing og produksjonssetting av 40+ endringer i en plattform med over 1 million brukere, og vært selskapets interne kontaktpunkt for feilmeldinger og brukerhenvendelser. Teknisk fundament fra fagbrev i IKT-driftsfag. Strukturert og selvgående, og komfortabel med mange baller i luften samtidig. Søker nå en rolle innen applikasjonsforvaltning og IT-koordinering. Tilgjengelig på kort varsel.",
+    summary: "Produktleder med solid erfaring i å eie produktverdi på tvers av brukerbehov, teknologi og forretning. Har koordinert og kvalitetssikret 40+ endringer i en global plattform med over 1 million norske brukere — fra risikovurdering og avhengigheter til testing, produksjonssetting og evaluering. Sterk på å bygge tverrfaglige team, skape struktur og prioriteringer, og jobbe datadrevet med både kvalitativ og kvantitativ innsikt. Teknisk fundament fra fagbrev i IKT-driftsfag. Søker nå en produktlederrolle der jeg kan forme tjenester som faktisk gjør hverdagen enklere for folk.",
     contact: {
       location: "Oslo",
       phone: "+47 472 34 017",
@@ -45,14 +45,14 @@ export const initialCVData: CVData = {
       location: "Oslo",
       role: "Senior Product Manager & Team Lead",
       period: "2022 – 2025",
-      description: "Operativt ansvar for å følge opp applikasjoner, endringer og leverandører i en global plattform med over 1 million norske brukere.",
+      description: "Hovedansvar for å koordinere og kvalitetssikre lokale endringer i en global plattform med over 1 million norske brukere — med fokus på produktverdi, brukerinnsikt og tverrfaglig leveranse.",
       bullets: [
-        "Koordinerte og kvalitetssikret 40+ endringer og feilmeldinger innen betaling, integrasjoner, UX og funksjonalitet — med ansvar for risikovurdering, avhengigheter, testing og koordinert utrulling i samarbeid med tekniske team og leverandører.",
-        "Var selskapets interne kontaktpunkt for produktrelaterte spørsmål og support — tilsvarende et brukerforum — og fulgte opp feilrapporter og forbedringsforslag; oversatte tekniske beslutninger for ikke-tekniske interessenter.",
-        "Koordinerte leverandøroppfølging av eksterne betalings- og innloggingsleverandører (Vipps Direct, Trustly, Klarna, BankID) ved nye integrasjoner og endringer.",
+        "Koordinerte og kvalitetssikret 40+ endringer innen betaling, integrasjoner, UX og funksjonalitet — med ansvar for risikovurdering, avhengigheter, testing og koordinert utrulling i samarbeid med tekniske team.",
         "Sikret testing, kommunikasjon og oppfølging før og etter produksjonssetting; vurderte konsekvenser og bruker-/forretningspåvirkning ved større endringer.",
         "Teamleder med personalansvar — medarbeidersamtaler, utviklingsplaner og rekruttering; representerte produktteamet overfor ledelsen og den globale organisasjonen.",
-        "Evaluerte gjennomførte endringer og rapporterte produkt- og leveranse-KPI-er månedlig til ledelsen gjennom egenbygde Looker-dashboards på BigQuery-data."
+        "Internt kontaktpunkt for produktrelaterte spørsmål og support; fulgte opp feilrapporter og oversatte tekniske beslutninger for ikke-tekniske interessenter.",
+        "Evaluerte gjennomførte endringer og rapporterte produkt- og leveranse-KPI-er månedlig til ledelsen gjennom egenbygde Looker-dashboards på BigQuery-data.",
+        "Bidro til selskapets globale AI-satsing gjennom workshops for ansatte, internt pilotprosjekt for Gemini Workspace og strukturert testing av nye løsninger."
       ]
     },
     {
@@ -61,22 +61,10 @@ export const initialCVData: CVData = {
       location: "Oslo",
       role: "Produktleder",
       period: "2018 – 2022",
-      description: "Koordinerte tekniske endringer og leverandørintegrasjoner for Parklink, som vokste fra 50 000 til 600 000 brukere; tett daglig samarbeid med DevOps-team om drift, prioritering og oppfølging.",
+      description: "Sentral i produktutviklingen av Parklink, som vokste fra 50 000 til 600 000 brukere; tett daglig samarbeid med DevOps-team om drift, prioritering og oppfølging av tekniske endringer.",
       bullets: [
-        "Koordinerte lansering av nye selvbetjente tjenester og leverandørintegrasjoner (avtaleparkering, Trumf-integrasjon, firmakonto) mot sluttbrukere, kunder og partnere.",
+        "Koordinerte lansering av nye selvbetjente tjenester (avtaleparkering, Trumf-integrasjon, firmakonto) mot sluttbrukere, kunder og partnere.",
         "Identifiserte og automatiserte interne supportprosesser — reduserte manuelt arbeid og doblet prosesseffektiviteten."
-      ]
-    },
-    {
-      id: "exp4",
-      company: "NSN AS",
-      location: "Oslo",
-      role: "Prosjektleder",
-      period: "2016 – 2018",
-      description: "Koordinerte leverandører, kunder og distribuerte utviklingsteam (Ukraina, India, Brasil) i teknisk leveranse for en portefølje på 1 200+ kunder.",
-      bullets: [
-        "Ledet overgangen fra egenutviklet CMS og prosjektstyringsverktøy til WordPress/WooCommerce og Teamwork — reduserte leveransetiden med ca. 20 %.",
-        "Fulgte opp ekstern SEO/Adwords-leverandør og distribuerte utviklerteam for å sikre fremdrift og kvalitet i leveransene."
       ]
     },
     {
@@ -85,8 +73,19 @@ export const initialCVData: CVData = {
       location: "Oslo",
       role: "Produktleder (engasjement)",
       period: "2025 – 2026",
-      description: "Kortere engasjement: vurderte og konseptualiserte nye produktlinjer for algoritmisk handelsselskap, med behovsavklaring, risikovurdering og beslutningsgrunnlag for ledelsens veivalg.",
+      description: "Vurderte og konseptualiserte nye produktlinjer for algoritmisk handelsselskap, basert på selskapets handelsdata — blant annet utredning av en mulig handelsplattform, med behovsavklaring, risikovurdering og beslutningsgrunnlag for ledelsens veivalg. Bygget prototyper med AI-verktøy (Claude, Google AI Studio, Lovable, Bolt) i utforskningen.",
       bullets: []
+    },
+    {
+      id: "exp4",
+      company: "NSN AS",
+      location: "Oslo",
+      role: "Prosjektleder",
+      period: "2016 – 2018",
+      description: "Ledet tekniske web- og e-handelsprosjekter fra behovsavklaring til leveranse for en portefølje på 1 200+ kunder, i samarbeid med distribuerte utviklingsteam (Ukraina, India, Brasil).",
+      bullets: [
+        "Ledet overgangen til WordPress/WooCommerce og nytt prosjektstyringsverktøy — reduserte leveransetiden med ca. 20 %."
+      ]
     },
     {
       id: "exp5",
@@ -94,7 +93,7 @@ export const initialCVData: CVData = {
       location: "Oslo",
       role: "Eier og daglig leder",
       period: "2011 – 2016",
-      description: "Grunnla og drev digitalt byrå som leverte over 40 nettbutikker og nettsider, med personalansvar for 6 ansatte og koordinering av 14+ eksterne utviklere.",
+      description: "Grunnla og drev digitalt byrå som leverte over 40 nettbutikker og nettsider — blant de første leverandørene av selvbetjente Magento-nettbutikker, først i Norge med WooCommerce. Rekrutterte og hadde personalansvar for 6 ansatte, og koordinerte 14+ eksterne utviklere.",
       bullets: []
     }
   ],
@@ -129,13 +128,12 @@ export const initialCVData: CVData = {
     }
   ],
   skills: [
-    "APPLIKASJONSFORVALTNING",
-    "LEVERANDØROPPFØLGING OG KOORDINERING",
-    "ITSM-RELATERT PROSESSARBEID (INCIDENT/PROBLEM/ENDRING)",
+    "PRODUKTSTRATEGI OG PRIORITERING",
+    "BRUKERINNSIKT OG EFFEKT-MÅLING",
+    "TVERRFAGLIG TEAMLEDELSE",
     "RISIKOVURDERING OG AVHENGIGHETER",
     "TESTING OG KVALITETSSIKRING",
-    "TVERRFAGLIG KOORDINERING",
-    "PROSESSFORBEDRING",
+    "PROSESSFORBEDRING OG SUPPORT",
     "LOOKER / BIGQUERY / TABLEAU",
     "JIRA / CONFLUENCE / FAVRO",
     "AI-VERKTØY (CLAUDE, LOVABLE, BOLT)"
