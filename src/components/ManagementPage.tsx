@@ -8,9 +8,11 @@ import {
   Layout, 
   ChevronRight,
   Database,
-  ArrowLeft
+  ArrowLeft,
+  FileText
 } from 'lucide-react';
 import { CVVersion, CVData } from '../types';
+import { predefinedTemplates, CVTemplate } from '../variants';
 import { cn } from '../lib/utils';
 
 interface ManagementPageProps {
@@ -20,6 +22,7 @@ interface ManagementPageProps {
   onSelectVersion: (v: CVVersion) => void;
   onDeleteVersion: (id: string) => void;
   onNewVersion: () => void;
+  onLoadTemplate: (template: CVTemplate) => void;
   onEditLayout: () => void;
   onBackToEditor: () => void;
 }
@@ -31,6 +34,7 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
   onSelectVersion,
   onDeleteVersion,
   onNewVersion,
+  onLoadTemplate,
   onEditLayout,
   onBackToEditor
 }) => {
@@ -63,6 +67,39 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
           
           {/* Versions List */}
           <div className="lg:col-span-2 space-y-6">
+
+            {/* Predefined Templates */}
+            <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm space-y-6">
+              <div className="flex items-center gap-3 border-b border-slate-100 pb-6">
+                <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600">
+                  <FileText size={18} />
+                </div>
+                <h2 className="text-lg font-bold text-slate-900 uppercase tracking-tight">Forhåndsdefinerte maler</h2>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {predefinedTemplates.map((t) => (
+                  <div
+                    key={t.id}
+                    onClick={() => onLoadTemplate(t)}
+                    className="group relative p-6 rounded-2xl border border-slate-200 bg-white hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <div className="space-y-1 mb-3">
+                      <h3 className="font-black text-lg tracking-tight text-slate-700 group-hover:text-emerald-800">
+                        {t.name}
+                      </h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">{t.description}</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-600/70 mt-2">
+                      <ChevronRight size={14} />
+                      Last inn mal
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Saved Versions */}
             <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm space-y-8">
               <div className="flex items-center justify-between border-b border-slate-100 pb-6">
                 <div className="flex items-center gap-3">
@@ -108,7 +145,7 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
                           </h3>
                           <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                             <Clock size={12} />
-                            <span>{v.updatedAt?.toDate().toLocaleDateString()}</span>
+                            <span>{v.updatedAt?.toDate?.()?.toLocaleDateString?.() ?? ''}</span>
                           </div>
                         </div>
                         {currentVersion?.id === v.id ? (
@@ -168,17 +205,17 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
                   <h2 className="text-sm font-bold uppercase tracking-widest">Datalagring</h2>
                </div>
                <div className="space-y-2">
-                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest opacity-60">
-                    <span>Brukte versjoner</span>
-                    <span>{versions.length} / 20</span>
-                  </div>
-                  <div className="w-full h-2 bg-indigo-800 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(versions.length / 20) * 100}%` }}
-                      className="h-full bg-indigo-400"
-                    />
-                  </div>
+                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest opacity-60">
+                   <span>Brukte versjoner</span>
+                   <span>{versions.length} / 20</span>
+                 </div>
+                 <div className="w-full h-2 bg-indigo-800 rounded-full overflow-hidden">
+                   <motion.div 
+                     initial={{ width: 0 }}
+                     animate={{ width: `${(versions.length / 20) * 100}%` }}
+                     className="h-full bg-indigo-400"
+                   />
+                 </div>
                </div>
                <p className="text-[10px] opacity-60 leading-relaxed font-medium italic">
                  Dine CV-er lagres trygt i skyen og kan nås fra alle enheter.

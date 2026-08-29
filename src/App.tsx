@@ -17,6 +17,7 @@ import { onSnapshot, collection, query, where, orderBy } from 'firebase/firestor
 import { auth, signIn, signOut, saveCVVersion, updateCVVersion, deleteCVVersion, db } from './lib/firebase';
 import { CVData, CVVersion } from './types';
 import { initialCVData } from './initialData';
+import { CVTemplate } from './variants';
 import CVPreview from './components/CVPreview';
 import CVEditor from './components/CVEditor';
 import ManagementPage from './components/ManagementPage';
@@ -58,13 +59,6 @@ export default function App() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const v = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CVVersion));
       setVersions(v);
-      
-      // If we don't have a current version yet, or it's not in the new list, pick the first one
-      if (v.length > 0 && !currentVersion) {
-        // Only auto-load if it's the first time
-        // setCurrentVersion(v[0]);
-        // setCvData(v[0].data);
-      }
     });
 
     return unsubscribe;
@@ -80,8 +74,7 @@ export default function App() {
 
     setIsSaving(true);
     try {
-      const res = await saveCVVersion(user.uid, name, cvData);
-      // Optional: automatically select the new version
+      await saveCVVersion(user.uid, name, cvData);
     } finally {
       setIsSaving(false);
     }
@@ -107,6 +100,12 @@ export default function App() {
     setActiveTab('preview');
   };
 
+  const handleLoadTemplate = (template: CVTemplate) => {
+    setCurrentVersion(null);
+    setCvData(JSON.parse(JSON.stringify(template.data))); // deep copy
+    setView('editor');
+  };
+
   const handleDownloadPdf = () => {
     window.print();
   };
@@ -122,8 +121,6 @@ export default function App() {
     }
   };
 
-  // Removed local login wall
-
   if (view === 'management') {
     return (
       <ManagementPage 
@@ -135,7 +132,6 @@ export default function App() {
           setView('editor');
         }}
         onDeleteVersion={(id) => {
-          // Need to wrap the async call
           const del = async () => {
             if (confirm("Er du sikker på at du vil slette denne versjonen?")) {
               await deleteCVVersion(id);
@@ -152,6 +148,7 @@ export default function App() {
           setCvData(initialCVData);
           setView('editor');
         }}
+        onLoadTemplate={handleLoadTemplate}
         onEditLayout={() => {
           setView('editor');
           setEditingSection('settings');
