@@ -1,4 +1,4 @@
-import React, { useState, useEffect, MouseEvent, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Plus,
@@ -9,11 +9,10 @@ import {
   Layout,
   Download
 } from 'lucide-react';
-import { onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
-import { saveCVVersion, updateCVVersion, deleteCVVersion, db } from './lib/firebase';
 import { CVData, CVVersion } from './types';
 import { initialCVData } from './initialData';
 import { CVTemplate } from './variants';
+import { listVersions, saveVersion, updateVersion, deleteVersion } from './lib/localStore';
 import CVPreview from './components/CVPreview';
 import CVEditor from './components/CVEditor';
 import ManagementPage from './components/ManagementPage';
@@ -43,33 +42,24 @@ export default function App() {
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [highlightSetting, setHighlightSetting] = useState<string | null>(null);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
+  const refreshVersions = () => {
+    setVersions(listVersions());
+  };
+
   useEffect(() => {
-    if (!user) return;
-
-    const q = query(
-      collection(db, 'cv_versions'),
-      where('userId', '==', user.uid),
-      orderBy('updatedAt', 'desc')
-    );
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const v = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CVVersion));
-        setVersions(v);
-      },
-      () => {
-        // Firestore may require real auth — ignore errors, versions stay local-empty
-      }
-    );
-
-    return unsubscribe;
+    if (user) refreshVersions();
   }, [user]);
+
+  const showSaved = (msg: string) => {
+    setSaveMessage(msg);
+    setTimeout(() => setSaveMessage(null), 2500);
+  };
 
   const handleLogin = (e: FormEvent) => {
     e.preventDefault();
@@ -93,22 +83,23 @@ export default function App() {
     setView('editor');
   };
 
-  const handleSaveAsNew = async () => {
+  const handleSaveAsNew = () => {
     if (!user) return;
     const name = prompt("Navn på versjon (f.eks. 'Entur – Team Automat'):");
     if (!name) return;
 
     setIsSaving(true);
     try {
-      await saveCVVersion(user.uid, name, cvData);
-    } catch {
-      alert('Kunne ikke lagre til skyen. Sjekk Firebase-regler.');
+      const v = saveVersion(user.uid, name, cvData);
+      setCurrentVersion(v);
+      refreshVersions();
+      showSaved(`Lagret «${name}»`);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = () => {
     if (!currentVersion) {
       handleSaveAsNew();
       return;
@@ -116,9 +107,12 @@ export default function App() {
 
     setIsSaving(true);
     try {
-      await updateCVVersion(currentVersion.id, currentVersion.name, cvData);
-    } catch {
-      alert('Kunne ikke lagre til skyen. Sjekk Firebase-regler.');
+      const v = updateVersion(currentVersion.id, currentVersion.name, cvData);
+      if (v) {
+        setCurrentVersion(v);
+        refreshVersions();
+        showSaved(`Oppdatert «${v.name}»`);
+      }
     } finally {
       setIsSaving(false);
     }
@@ -137,6 +131,16 @@ export default function App() {
 
   const handleDownloadPdf = () => {
     window.print();
+  };
+
+  const handleDeleteVersion = (id: string) => {
+    if (!confirm('Er du sikker på at du vil slette denne versjonen?')) return;
+    deleteVersion(id);
+    if (currentVersion?.id === id) {
+      setCurrentVersion(null);
+      setCvData(initialCVData);
+    }
+    refreshVersions();
   };
 
   // Simple login screen
@@ -213,22 +217,7 @@ export default function App() {
           handleSelectVersion(v);
           setView('editor');
         }}
-        onDeleteVersion={(id) => {
-          const del = async () => {
-            if (confirm("Er du sikker på at du vil slette denne versjonen?")) {
-              try {
-                await deleteCVVersion(id);
-              } catch {
-                // ignore
-              }
-              if (currentVersion?.id === id) {
-                setCurrentVersion(null);
-                setCvData(initialCVData);
-              }
-            }
-          };
-          del();
-        }}
+        onDeleteVersion={handleDeleteVersion}
         onNewVersion={() => {
           setCurrentVersion(null);
           setCvData(initialCVData);
@@ -347,7 +336,9 @@ export default function App() {
       <div className="print:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
           <div className="text-sm text-slate-500 font-medium truncate">
-            {currentVersion ? (
+            {saveMessage ? (
+              <span className="text-emerald-600 font-bold">{saveMessage}</span>
+            ) : currentVersion ? (
               <>
                 Aktiv versjon: <span className="text-indigo-700 font-bold">{currentVersion.name}</span>
               </>
