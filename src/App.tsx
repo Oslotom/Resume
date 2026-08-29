@@ -27,6 +27,7 @@ export default function App() {
   const [view, setView] = useState<'editor' | 'management'>('editor');
 
   const [user, setUser] = useState(auth.currentUser);
+  const [authReady, setAuthReady] = useState(false);
   const [versions, setVersions] = useState<CVVersion[]>([]);
   const [currentVersion, setCurrentVersion] = useState<CVVersion | null>(null);
   const [cvData, setCvData] = useState<CVData>(initialCVData);
@@ -34,10 +35,12 @@ export default function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'preview' | 'versions'>('preview');
   const [highlightSetting, setHighlightSetting] = useState<string | null>(null);
+  const [loginLoading, setLoginLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((u) => {
       setUser(u);
+      setAuthReady(true);
       if (!u) {
         setVersions([]);
         setCurrentVersion(null);
@@ -63,6 +66,18 @@ export default function App() {
 
     return unsubscribe;
   }, [user]);
+
+  const handleLogin = async () => {
+    setLoginLoading(true);
+    try {
+      await signIn();
+    } catch (e) {
+      console.error(e);
+      alert('Innlogging feilet. Prøv igjen.');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
 
   const handleSaveAsNew = async () => {
     if (!user) {
@@ -120,6 +135,50 @@ export default function App() {
       }
     }
   };
+
+  // Loading while Firebase restores session
+  if (!authReady) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans">
+        <div className="text-slate-400 text-sm font-medium">Laster...</div>
+      </div>
+    );
+  }
+
+  // Simple login gate
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="w-full max-w-sm bg-white rounded-3xl border border-slate-200 shadow-xl p-10 text-center space-y-8"
+        >
+          <div className="space-y-3">
+            <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl mx-auto shadow-lg shadow-indigo-200">
+              C
+            </div>
+            <h1 className="text-2xl font-black tracking-tight text-slate-900">
+              Curriculum<span className="text-indigo-600">Pro</span>
+            </h1>
+            <p className="text-slate-500 text-sm font-medium">
+              Logg inn for å åpne CV-byggeren
+            </p>
+          </div>
+
+          <button
+            onClick={handleLogin}
+            disabled={loginLoading}
+            className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-indigo-600 text-white rounded-2xl text-sm font-bold shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-[0.98] disabled:opacity-60"
+          >
+            <LogIn size={18} />
+            {loginLoading ? 'Logger inn...' : 'Logg inn med Google'}
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (view === 'management') {
     return (
@@ -211,50 +270,35 @@ export default function App() {
             Last ned som PDF
           </button>
 
-          {user ? (
-            <>
-              <button
-                onClick={handleUpdate}
-                disabled={isSaving}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
-              >
-                <Save size={16} />
-                {isSaving ? 'Lagrer...' : currentVersion ? 'Lagre endringer' : 'Lagre ny versjon'}
-              </button>
-              
-              <div className="h-8 w-[1px] bg-slate-200 mx-2" />
-              
-              <div className="flex items-center gap-3">
-                <img 
-                  src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`} 
-                  className="w-8 h-8 rounded-full border"
-                  alt="Avatar"
-                />
-                <button 
-                  onClick={() => {
-                    signOut();
-                  }}
-                  className="p-2 text-gray-500 hover:text-red-500 transition-colors"
-                  title="Logg ut"
-                >
-                  <LogOut size={20} />
-                </button>
-              </div>
-            </>
-          ) : (
-            <button
-              onClick={() => signIn()}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all active:scale-95"
+          <button
+            onClick={handleUpdate}
+            disabled={isSaving}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+          >
+            <Save size={16} />
+            {isSaving ? 'Lagrer...' : currentVersion ? 'Lagre endringer' : 'Lagre ny versjon'}
+          </button>
+          
+          <div className="h-8 w-[1px] bg-slate-200 mx-2" />
+          
+          <div className="flex items-center gap-3">
+            <img 
+              src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`}
+              className="w-8 h-8 rounded-full border"
+              alt="Avatar"
+            />
+            <button 
+              onClick={() => signOut()}
+              className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+              title="Logg ut"
             >
-              <LogIn size={16} />
-              Logg inn for å lagre
+              <LogOut size={20} />
             </button>
-          )}
+          </div>
         </div>
       </nav>
 
       <main className="flex-1 flex overflow-hidden print:overflow-visible print:block pb-24">
-        {/* Content View */}
         <div className="flex-1 overflow-y-auto p-12 bg-slate-200/50 scroll-smooth flex justify-center print:overflow-visible print:h-auto print:p-0 print:bg-white print:block">
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
@@ -292,34 +336,22 @@ export default function App() {
               <Download size={16} />
               PDF
             </button>
-            {user ? (
-              <>
-                <button
-                  onClick={handleSaveAsNew}
-                  disabled={isSaving}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white border border-indigo-200 text-indigo-700 rounded-xl text-sm font-semibold hover:bg-indigo-50 transition-all disabled:opacity-50"
-                >
-                  <Plus size={16} />
-                  Lagre som ny
-                </button>
-                <button
-                  onClick={handleUpdate}
-                  disabled={isSaving}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
-                >
-                  <Save size={16} />
-                  {isSaving ? 'Lagrer...' : currentVersion ? 'Lagre endringer' : 'Lagre versjon'}
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => signIn()}
-                className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-all"
-              >
-                <LogIn size={16} />
-                Logg inn for å lagre
-              </button>
-            )}
+            <button
+              onClick={handleSaveAsNew}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-indigo-200 text-indigo-700 rounded-xl text-sm font-semibold hover:bg-indigo-50 transition-all disabled:opacity-50"
+            >
+              <Plus size={16} />
+              Lagre som ny
+            </button>
+            <button
+              onClick={handleUpdate}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+            >
+              <Save size={16} />
+              {isSaving ? 'Lagrer...' : currentVersion ? 'Lagre endringer' : 'Lagre versjon'}
+            </button>
           </div>
         </div>
       </div>
