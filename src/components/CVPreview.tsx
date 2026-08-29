@@ -150,7 +150,10 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
         </div>
       </div>
       {/* PAGE 1 */}
-      <div className="bg-white shadow-2xl w-full min-h-[1414px] flex flex-col md:flex-row text-[#333] font-sans overflow-hidden ring-1 ring-slate-200 print:shadow-none print:ring-0 print:break-after-page print-document-page">
+      <div 
+        className="bg-white shadow-2xl w-full flex flex-col md:flex-row text-[#333] font-sans overflow-hidden ring-1 ring-slate-200 print:shadow-none print:ring-0 print:break-after-page print-document-page"
+        style={{ minHeight: `${pageWidth * 1.4142}px` }}
+      >
         {/* Left Sidebar */}
         <div 
           className="bg-[#4A4A4A] text-white flex flex-col transition-all duration-300 relative group/sidebar print-document-sidebar"
@@ -487,7 +490,10 @@ export default function CVPreview({ data, onEditSection, onUpdateData, highlight
       </div>
 
       {/* PAGE 2 */}
-      <div className="bg-white shadow-2xl w-full min-h-[1414px] flex flex-col text-[#333] font-sans overflow-hidden ring-1 ring-slate-200 print-document-page">
+      <div 
+        className="bg-white shadow-2xl w-full flex flex-col text-[#333] font-sans overflow-hidden ring-1 ring-slate-200 print-document-page"
+        style={{ minHeight: `${pageWidth * 1.4142}px` }}
+      >
         <div 
           className="bg-white flex flex-col transition-all duration-300"
           style={{ 

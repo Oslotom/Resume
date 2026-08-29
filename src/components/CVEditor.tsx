@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Save, Plus, Trash2, Type, Layout, Maximize, Move, AlignLeft, GripVertical } from 'lucide-react';
+import { X, Save, Plus, Trash2, Type, Layout, Maximize, Move, AlignLeft, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import { CVData, ExperienceItem, EducationItem, LanguageItem, ProjectItem } from '../types';
 import { cn } from '../lib/utils';
 
@@ -67,6 +67,21 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
     setLocalData(updated);
   };
 
+  const moveExperience = (id: string, direction: 'up' | 'down') => {
+    const updated = { ...localData };
+    const index = updated.experience.findIndex(exp => exp.id === id);
+    if (index === -1) return;
+    
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= updated.experience.length) return;
+    
+    const tempExperience = [...updated.experience];
+    const [movedItem] = tempExperience.splice(index, 1);
+    tempExperience.splice(newIndex, 0, movedItem);
+    
+    setLocalData({ ...updated, experience: tempExperience });
+  };
+
   const updateEducation = (id: string, updates: Partial<EducationItem>) => {
     const updated = { ...localData };
     updated.education = updated.education.map(edu => edu.id === id ? { ...edu, ...updates } : edu);
@@ -83,6 +98,18 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
       details: ""
     });
     setLocalData(updated);
+  };
+
+  const moveEducation = (id: string, direction: 'up' | 'down') => {
+    const updated = { ...localData };
+    const index = updated.education.findIndex(e => e.id === id);
+    if (index === -1) return;
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= updated.education.length) return;
+    const temp = [...updated.education];
+    const [item] = temp.splice(index, 1);
+    temp.splice(newIndex, 0, item);
+    setLocalData({ ...updated, education: temp });
   };
 
   const updateProjects = (id: string, updates: Partial<ProjectItem>) => {
@@ -107,6 +134,18 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
     const updated = { ...localData };
     updated.projects = updated.projects.filter(proj => proj.id !== id);
     setLocalData(updated);
+  };
+
+  const moveProject = (id: string, direction: 'up' | 'down') => {
+    const updated = { ...localData };
+    const index = updated.projects.findIndex(p => p.id === id);
+    if (index === -1) return;
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= updated.projects.length) return;
+    const temp = [...updated.projects];
+    const [item] = temp.splice(index, 1);
+    temp.splice(newIndex, 0, item);
+    setLocalData({ ...updated, projects: temp });
   };
 
   const updateSkills = (val: string) => {
@@ -231,6 +270,8 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
                         <option value="Outfit">Outfit</option>
                         <option value="EB Garamond">Garamond</option>
                         <option value="Montserrat">Montserrat</option>
+                        <option value="Lora">Lora</option>
+                        <option value="Merriweather">Merriweather</option>
                       </select>
                     </div>
                     <div className="space-y-2">
@@ -246,7 +287,35 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
                         <option value="Outfit">Outfit</option>
                         <option value="Roboto">Roboto</option>
                         <option value="Lato">Lato</option>
+                        <option value="PT Sans">PT Sans</option>
                       </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between">
+                        <span>Hovedtekst str.</span>
+                        <span className="text-indigo-600">{localData.settings?.bodyFontSize ?? 7.8}pt</span>
+                      </label>
+                      <input 
+                        type="range" min="6" max="14" step="0.2"
+                        className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                        value={localData.settings?.bodyFontSize ?? 7.8}
+                        onChange={(e) => handleSettingsChange('bodyFontSize', parseFloat(e.target.value))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between">
+                        <span>Overskrift str.</span>
+                        <span className="text-indigo-600">{localData.settings?.sectionTitleFontSize ?? 11}pt</span>
+                      </label>
+                      <input 
+                        type="range" min="8" max="24" step="0.5"
+                        className="w-full h-1.5 bg-white rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                        value={localData.settings?.sectionTitleFontSize ?? 11}
+                        onChange={(e) => handleSettingsChange('sectionTitleFontSize', parseFloat(e.target.value))}
+                      />
                     </div>
                   </div>
 
@@ -469,14 +538,30 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
                 <div className="flex justify-between items-center">
                   <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Arbeidserfaring</h3>
                 </div>
-                {localData.experience.map((exp) => (
+                {localData.experience.map((exp, index) => (
                   <div key={exp.id} className="p-5 bg-slate-50 rounded-2xl relative border border-slate-200">
-                    <button 
-                      onClick={() => removeExperience(exp.id)}
-                      className="absolute top-2 right-2 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <button 
+                        onClick={() => moveExperience(exp.id, 'up')}
+                        disabled={index === 0}
+                        className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all disabled:opacity-0 disabled:pointer-events-none"
+                      >
+                        <ChevronUp size={16} />
+                      </button>
+                      <button 
+                        onClick={() => moveExperience(exp.id, 'down')}
+                        disabled={index === localData.experience.length - 1}
+                        className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all disabled:opacity-0 disabled:pointer-events-none"
+                      >
+                        <ChevronDown size={16} />
+                      </button>
+                      <button 
+                        onClick={() => removeExperience(exp.id)}
+                        className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       <input 
                         placeholder="Selskap"
@@ -612,14 +697,30 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
                 <div className="flex justify-between items-center">
                   <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Utvalgte prosjekter</h3>
                 </div>
-                {localData.projects.map((proj) => (
+                {localData.projects.map((proj, index) => (
                   <div key={proj.id} className="p-5 bg-slate-50 rounded-2xl relative border border-slate-200">
-                    <button 
-                      onClick={() => removeProject(proj.id)}
-                      className="absolute top-2 right-2 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <button 
+                        onClick={() => moveProject(proj.id, 'up')}
+                        disabled={index === 0}
+                        className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all disabled:opacity-0 disabled:pointer-events-none"
+                      >
+                        <ChevronUp size={16} />
+                      </button>
+                      <button 
+                        onClick={() => moveProject(proj.id, 'down')}
+                        disabled={index === localData.projects.length - 1}
+                        className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all disabled:opacity-0 disabled:pointer-events-none"
+                      >
+                        <ChevronDown size={16} />
+                      </button>
+                      <button 
+                        onClick={() => removeProject(proj.id)}
+                        className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       <input 
                         placeholder="Prosjektnavn"
@@ -761,8 +862,24 @@ export default function CVEditor({ section, data, onClose, onSave, onHighlightSe
               </div>
 
               <div className="space-y-4">
-                {localData.education.map((edu) => (
-                  <div key={edu.id} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                {localData.education.map((edu, index) => (
+                  <div key={edu.id} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 relative">
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <button 
+                        onClick={() => moveEducation(edu.id, 'up')}
+                        disabled={index === 0}
+                        className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all disabled:opacity-0 disabled:pointer-events-none"
+                      >
+                        <ChevronUp size={16} />
+                      </button>
+                      <button 
+                        onClick={() => moveEducation(edu.id, 'down')}
+                        disabled={index === localData.education.length - 1}
+                        className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all disabled:opacity-0 disabled:pointer-events-none"
+                      >
+                        <ChevronDown size={16} />
+                      </button>
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
                       <input 
                         placeholder="Grad / Utdanning"
