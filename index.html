@@ -122,8 +122,7 @@ h1 .it{display:block;color:var(--fg-2);padding-left:.1em}
 
 /* Projects: one per row, text left, stat boxes right */
 .projects{display:grid;gap:20px;list-style:none;margin:0;padding:0}
-.project{display:grid;grid-template-columns:56px minmax(0,1fr) minmax(0,1.15fr);gap:20px 40px;padding:clamp(24px,3.4vw,40px);align-items:center}
-.project .n{align-self:start;font:italic 400 1.375rem/1.6 var(--serif);color:var(--muted)}
+.project{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px 40px;padding:clamp(24px,3.4vw,40px);align-items:center}
 .project h3{font:400 clamp(1.875rem,3vw,2.5rem)/1.02 var(--serif);margin:0;letter-spacing:-.01em}
 .project h3 .it{display:block;color:var(--fg-2)}
 .project p{margin:16px 0 0;color:var(--fg-2);max-width:52ch}
@@ -133,7 +132,7 @@ h1 .it{display:block;color:var(--fg-2);padding-left:.1em}
 .pstats div{padding:20px 18px;border-radius:14px;background:var(--bg);border:1px solid var(--hair);min-width:0}
 .pstats dt{font:400 clamp(1.75rem,2.6vw,2.25rem)/1.05 var(--serif);letter-spacing:-.01em;overflow-wrap:anywhere}
 .pstats dd{margin:8px 0 0;font-size:.875rem;line-height:1.4;color:var(--fg-2)}
-@media (max-width:900px){.project{grid-template-columns:minmax(0,1fr)}.project .n{line-height:1}}
+@media (max-width:900px){.project{grid-template-columns:minmax(0,1fr)}}
 
 /* Skills */
 .skills{display:grid;gap:20px}
@@ -289,7 +288,6 @@ footer a:hover{color:var(--fg)}
       </div>
       <ol class="projects">
         <li class="card project" data-reveal>
-          <span class="n">01</span>
           <div class="pmain">
             <h3>App <span class="it">consolidation</span></h3>
             <p>Coordinated the consolidation of the app across 6 markets: rollout testing, bug reporting, and customer interviews with analysis of the results.</p>
@@ -298,7 +296,6 @@ footer a:hover{color:var(--fg)}
           <dl class="pstats"><div><dt>6</dt><dd>markets consolidated</dd></div><div><dt>1M+</dt><dd>users in Norway</dd></div><div><dt>Interviews</dt><dd>customer research on the relaunch</dd></div></dl>
         </li>
         <li class="card project" data-reveal>
-          <span class="n">02</span>
           <div class="pmain">
             <h3>Payment <span class="it">integrations</span></h3>
             <p>Vipps direct, Trustly, Klarna and BankID: technical clarifications, testing, dependencies and production release.</p>
@@ -307,7 +304,6 @@ footer a:hover{color:var(--fg)}
           <dl class="pstats"><div><dt>4</dt><dd>payment providers</dd></div><div><dt>1M+</dt><dd>users affected</dd></div></dl>
         </li>
         <li class="card project" data-reveal>
-          <span class="n">03</span>
           <div class="pmain">
             <h3>DISCO <span class="it">campaign engine</span></h3>
             <p>Introduced a new campaign mechanism. Pushed head office on functionality gaps that affected conversion, and worked with the regional team to prioritize extended features and bug fixes.</p>
@@ -316,7 +312,6 @@ footer a:hover{color:var(--fg)}
           <dl class="pstats"><div><dt>HQ + region</dt><dd>stakeholders aligned</dd></div><div><dt>CVR</dt><dd>primary success metric</dd></div></dl>
         </li>
         <li class="card project" data-reveal>
-          <span class="n">04</span>
           <div class="pmain">
             <h3>MBR deck &amp; <span class="it">KPI reporting</span></h3>
             <p>Built BigQuery solutions feeding Google Sheets with data and charts into automatically updated slides for monthly product performance reporting, with recommendations.</p>
@@ -325,7 +320,6 @@ footer a:hover{color:var(--fg)}
           <dl class="pstats"><div><dt>Monthly</dt><dd>automated reporting</dd></div><div><dt>3</dt><dd>tools wired together</dd></div></dl>
         </li>
         <li class="card project" data-reveal>
-          <span class="n">05</span>
           <div class="pmain">
             <h3>Swimlanes, PRO <span class="it">&amp; Horizon</span></h3>
             <p>Optimized swimlanes for conversion, coordinated the PRO subscription and Buy Sell Model, and rolled out the Project Horizon rebrand.</p>
@@ -334,7 +328,6 @@ footer a:hover{color:var(--fg)}
           <dl class="pstats"><div><dt>3</dt><dd>initiatives</dd></div><div><dt>1M+</dt><dd>users reached</dd></div></dl>
         </li>
         <li class="card project" data-reveal>
-          <span class="n">06</span>
           <div class="pmain">
             <h3>Feature <span class="it">rollouts</span></h3>
             <p>Priority delivery, BOGO, Promo tool and Bottom navigation: functional testing and controlled rollout.</p>
@@ -343,7 +336,6 @@ footer a:hover{color:var(--fg)}
           <dl class="pstats"><div><dt>4</dt><dd>features rolled out</dd></div><div><dt>30+</dt><dd>local launches in total</dd></div></dl>
         </li>
         <li class="card project" data-reveal>
-          <span class="n">07</span>
           <div class="pmain">
             <h3>Parklink <span class="it">app</span></h3>
             <p>Grew from 50,000 to 600,000 users with strategic partners NorgesGruppen and Olav Thon Gruppen. Turned end-user and customer feedback into developer tasks, working daily with DevOps.</p>
@@ -352,7 +344,6 @@ footer a:hover{color:var(--fg)}
           <dl class="pstats"><div><dt>600k</dt><dd>users, up from 50k</dd></div><div><dt>12×</dt><dd>user growth</dd></div><div><dt>2</dt><dd>strategic partners</dd></div></dl>
         </li>
         <li class="card project" data-reveal>
-          <span class="n">08</span>
           <div class="pmain">
             <h3>Trumf <span class="it">integration</span></h3>
             <p>Parking benefit for purchases in NorgesGruppen stores, rolled out nationally from 2022.</p>
@@ -361,7 +352,6 @@ footer a:hover{color:var(--fg)}
           <dl class="pstats"><div><dt>2022</dt><dd>national rollout</dd></div><div><dt>NorgesGruppen</dt><dd>partner and shareholder</dd></div></dl>
         </li>
         <li class="card project" data-reveal>
-          <span class="n">09</span>
           <div class="pmain">
             <h3>Permits &amp; <span class="it">business accounts</span></h3>
             <p>Self-service publishing, buying and managing of parking leases, plus an app and dashboard for parking payment and invoicing.</p>
@@ -370,7 +360,6 @@ footer a:hover{color:var(--fg)}
           <dl class="pstats"><div><dt>3</dt><dd>user groups: end user, customer, partner</dd></div><div><dt>App + web</dt><dd>dashboard and invoicing</dd></div></dl>
         </li>
         <li class="card project" data-reveal>
-          <span class="n">10</span>
           <div class="pmain">
             <h3>Portal <span class="it">redesign</span></h3>
             <p>UX redesign with an external design agency, plus concept sketches for an app and back office for property digitization.</p>
@@ -379,7 +368,6 @@ footer a:hover{color:var(--fg)}
           <dl class="pstats"><div><dt>2</dt><dd>surfaces: app and back office</dd></div><div><dt>External</dt><dd>design agency partner</dd></div></dl>
         </li>
         <li class="card project" data-reveal>
-          <span class="n">11</span>
           <div class="pmain">
             <h3>Tooling &amp; <span class="it">CMS migration</span></h3>
             <p>Moved from an in-house system to Teamwork and WordPress/WooCommerce, with staff training. Client work included coba-mt.com, essenscatering.no and agdervitenskapsakademi.no.</p>
@@ -388,7 +376,6 @@ footer a:hover{color:var(--fg)}
           <dl class="pstats"><div><dt>−20%</dt><dd>delivery time</dd></div><div><dt>1,200+</dt><dd>clients in portfolio</dd></div><div><dt>3</dt><dd>countries in dev team</dd></div></dl>
         </li>
         <li class="card project" data-reveal>
-          <span class="n">12</span>
           <div class="pmain">
             <h3>Online <span class="it">stores</span></h3>
             <p>Stunning Pictures, an art store with deep zoom and frame ordering; Altshop.no for health products; and 2train.no, later acquired by combatstore.no.</p>
