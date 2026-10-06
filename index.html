@@ -98,8 +98,8 @@ h1 .it{display:block;color:var(--fg-2);padding-left:.1em}
 /* Cards */
 .cards{list-style:none;margin:0;padding:0;display:grid;gap:20px}
 .card{background:var(--card);border:1px solid var(--hair);border-radius:18px;box-shadow:var(--shadow)}
-.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) 110px;gap:24px 40px;padding:clamp(24px,3.4vw,40px)}
-.when{font-size:.9375rem;color:var(--fg);font-variant-numeric:tabular-nums;white-space:nowrap;padding-top:6px;order:3;text-align:right}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) max-content;gap:24px 32px;padding:clamp(24px,3.4vw,40px)}
+.when{font-size:.9375rem;color:var(--fg);font-variant-numeric:tabular-nums;white-space:nowrap;padding-top:6px;order:3;display:flex;flex-direction:column;align-items:flex-end;gap:14px}
 .when .now{color:var(--accent);display:inline-flex;align-items:center;gap:6px}
 .when .now::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ok)}
 .title{font:400 clamp(1.625rem,2.6vw,2rem)/1.1 var(--serif);margin:0;letter-spacing:-.01em}
@@ -114,7 +114,18 @@ h1 .it{display:block;color:var(--fg-2);padding-left:.1em}
 .tags{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:24px 0 0;padding:0}
 .body .tags{display:flex}
 .tags li{padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:.75rem;letter-spacing:.04em;text-transform:uppercase;color:var(--fg-2);line-height:1.2}
-@media (max-width:900px){.row{grid-template-columns:minmax(0,1fr)}.when{padding-top:0;order:0;text-align:left}}
+.exp{cursor:pointer}
+.sum{color:var(--fg-2)}
+.more{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease}
+.more>div{overflow:hidden}
+.exp.open .more{grid-template-rows:1fr}
+.body .more ul:not(.tags){margin-top:16px}
+.toggle{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--fg-2);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .2s,transform .3s}
+.toggle::before{content:"";width:8px;height:8px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:translateY(-2px) rotate(45deg)}
+.exp:hover .toggle{background:var(--accent-soft);color:var(--accent)}
+.exp.open .toggle{transform:rotate(180deg)}
+@media (prefers-reduced-motion:reduce){.more,.toggle{transition:none}}
+@media (max-width:900px){.row{grid-template-columns:minmax(0,1fr)}.when{padding-top:0;order:0;flex-direction:row;justify-content:space-between;align-items:center}}
 
 /* Projects: one per row, text left, stat boxes right */
 .projects{display:grid;gap:20px;list-style:none;margin:0;padding:0}
@@ -201,61 +212,76 @@ footer a:hover{color:var(--fg)}
         </div>
       </div>
       <ol class="cards">
-        <li class="card row" data-reveal>
-          <span class="when">2025 — 2026</span>
+        <li class="card row exp" data-reveal>
+          <div class="when"><span>2025 — 2026</span><button class="toggle" type="button" aria-expanded="false" aria-label="Show details"></button></div>
           <div class="co"><span class="mark" aria-hidden="true">BI<img src="logos/bitruption.png" alt=""></span><div><h3 class="title">Product Manager</h3><p class="at">Bitruption</p></div></div>
           <div class="body">
+            <p class="sum">Shaped new product lines from the company's own trading data and validated concepts fast with AI-built prototypes.</p>
+            <div class="more"><div>
             <ul>
               <li>Assessed and shaped new product lines based on the company's own trading data, including analysis of a potential trading platform and decision material for leadership.</li>
               <li>Built working prototypes with AI tools (Claude, Google AI Studio, Lovable, Bolt) to test concepts before committing development resources.</li>
             </ul>
             <ul class="tags"><li>Algorithmic trading</li><li>AI prototyping</li><li>Engagement</li></ul>
+            </div></div>
           </div>
         </li>
-        <li class="card row" data-reveal>
-          <span class="when">2022 — 2025</span>
+        <li class="card row exp" data-reveal>
+          <div class="when"><span>2022 — 2025</span><button class="toggle" type="button" aria-expanded="false" aria-label="Show details"></button></div>
           <div class="co"><span class="mark" aria-hidden="true">FO<img src="logos/foodora.png" alt=""></span><div><h3 class="title">Senior Product Manager &amp; Team Lead</h3><p class="at">Foodora Norway</p></div></div>
           <div class="body">
+            <p class="sum">Owned the Norwegian side of a global e-commerce platform with 1M+ users, lifting conversion by 5.5% and leading the local team.</p>
+            <div class="more"><div>
             <ul>
               <li>Owned the Norwegian part of a global e-commerce platform with more than 1 million users, prioritizing the backlog with engineering, UX and local stakeholders.</li>
               <li>Raised the conversion rate by 5.5% through systematic work on the purchase journey, search, assortment placement and payment flow.</li>
               <li>Led the team with line management responsibility, built Looker dashboards on BigQuery for monthly KPI reporting, and drove the local AI program, including a Gemini Workspace pilot.</li>
             </ul>
             <ul class="tags"><li>E-commerce</li><li>Conversion</li><li>Team lead</li></ul>
+            </div></div>
           </div>
         </li>
-        <li class="card row" data-reveal>
-          <span class="when">2018 — 2022</span>
+        <li class="card row exp" data-reveal>
+          <div class="when"><span>2018 — 2022</span><button class="toggle" type="button" aria-expanded="false" aria-label="Show details"></button></div>
           <div class="co"><span class="mark" aria-hidden="true">BE<img src="logos/bember.png" alt=""></span><div><h3 class="title">Product Lead, Parklink</h3><p class="at">Bember</p></div></div>
           <div class="body">
+            <p class="sum">Grew Parklink from 50,000 to 600,000 users and launched partnerships with NorgesGruppen and Olav Thon Gruppen.</p>
+            <div class="more"><div>
             <ul>
               <li>Owned Parklink through growth from 50,000 to 600,000 users, working daily with DevOps on operations and priorities.</li>
               <li>Led partnerships with NorgesGruppen and Olav Thon Gruppen, from concept and prototype to launch of the Trumf integration and business accounts.</li>
               <li>Automated internal support processes, cutting manual work and doubling process efficiency.</li>
             </ul>
             <ul class="tags"><li>Mobility</li><li>Partnerships</li><li>Growth</li></ul>
+            </div></div>
           </div>
         </li>
-        <li class="card row" data-reveal>
-          <span class="when">2016 — 2018</span>
+        <li class="card row exp" data-reveal>
+          <div class="when"><span>2016 — 2018</span><button class="toggle" type="button" aria-expanded="false" aria-label="Show details"></button></div>
           <div class="co"><span class="mark" aria-hidden="true">NSN<img src="logos/nsn.png" alt=""></span><div><h3 class="title">Project Manager</h3><p class="at">NSN</p></div></div>
           <div class="body">
+            <p class="sum">Delivered web and e-commerce projects for 1,200+ clients with distributed teams, cutting delivery time by about 20%.</p>
+            <div class="more"><div>
             <ul>
               <li>Delivered web and e-commerce projects for a portfolio of 1,200+ clients with distributed teams in Ukraine, India and Brazil.</li>
               <li>Led the move to WordPress/WooCommerce and a new project management tool, reducing delivery time by about 20%.</li>
             </ul>
             <ul class="tags"><li>Web</li><li>E-commerce</li><li>Distributed teams</li></ul>
+            </div></div>
           </div>
         </li>
-        <li class="card row" data-reveal>
-          <span class="when">2011 — 2016</span>
+        <li class="card row exp" data-reveal>
+          <div class="when"><span>2011 — 2016</span><button class="toggle" type="button" aria-expanded="false" aria-label="Show details"></button></div>
           <div class="co"><span class="mark" aria-hidden="true">MO<img src="logos/moero.png" alt=""></span><div><h3 class="title">Founder &amp; CEO</h3><p class="at">Moero</p></div></div>
           <div class="body">
+            <p class="sum">Founded and ran an agency that delivered 40+ online stores, first in Norway with WooCommerce.</p>
+            <div class="more"><div>
             <ul>
               <li>Founded and ran an agency that delivered 40+ online stores and websites, among the first to offer self-service Magento stores and first in Norway with WooCommerce.</li>
               <li>Recruited and managed 6 employees and coordinated 14+ external developers.</li>
             </ul>
             <ul class="tags"><li>Agency</li><li>Magento</li><li>WooCommerce</li></ul>
+            </div></div>
           </div>
         </li>
       </ol>
@@ -478,6 +504,16 @@ footer a:hover{color:var(--fg)}
   function done(t){btn.textContent=t;setTimeout(function(){btn.textContent='Copy'},2000)}
   btn.addEventListener('click',function(){
     try{navigator.clipboard.writeText(el.textContent.trim()).then(function(){done('Copied')},function(){done('Failed')})}catch(e){done('Failed')}
+  });
+
+  // Experience cards: click to expand
+  document.querySelectorAll('.exp').forEach(function(c){
+    var b=c.querySelector('.toggle');
+    function set(o){c.classList.toggle('open',o);b.setAttribute('aria-expanded',o);b.setAttribute('aria-label',o?'Hide details':'Show details')}
+    c.addEventListener('click',function(e){
+      if(e.target.closest('a')||(e.target!==b&&String(getSelection())))return;
+      set(!c.classList.contains('open'));
+    });
   });
 
   // Highlight the nav item for the section in view
