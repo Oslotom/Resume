@@ -182,9 +182,30 @@ footer a:hover{color:var(--fg)}
 .pending{opacity:.15;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
 .pending.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.pending{opacity:1;transform:none;transition:none}.nav .cta:hover{transform:none}}
+
+/* Login gate (client-side only; static site) */
+html.locked body>*:not(.gate){display:none!important}
+.gate{display:none}
+html.locked .gate{display:grid;place-items:center;min-height:100vh;padding:16px}
+.gate form{width:100%;max-width:340px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;box-shadow:var(--shadow);display:grid;gap:12px}
+.gate h1{margin:0 0 4px;font:400 2rem/1.1 var(--serif)}
+.gate label{display:grid;gap:4px;font-size:.85rem;color:var(--fg-2)}
+.gate input{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.gate button{font:500 1rem var(--sans);color:var(--on-accent);background:var(--accent);border:0;border-radius:8px;padding:11px;cursor:pointer}
+.gate .err{min-height:1.2em;margin:0;font-size:.85rem;color:#C0392B}
 </style>
+<script>try{if(sessionStorage.getItem('auth')!=='1')document.documentElement.classList.add('locked')}catch(e){document.documentElement.classList.add('locked')}</script>
 </head>
 <body>
+<div class="gate">
+  <form id="login" autocomplete="off">
+    <h1>Sign in</h1>
+    <label>Username<input id="login-user" required autofocus></label>
+    <label>Password<input id="login-pass" type="password" required></label>
+    <p class="err" id="login-err" role="alert"></p>
+    <button type="submit">Log in</button>
+  </form>
+</div>
 <a class="skip" href="#experience">Skip to content</a>
 
 
@@ -482,6 +503,17 @@ footer a:hover{color:var(--fg)}
 </footer>
 
 <script>
+(function(){
+  var f=document.getElementById('login');
+  f.addEventListener('submit',function(e){
+    e.preventDefault();
+    if(document.getElementById('login-user').value==='admin'&&document.getElementById('login-pass').value==='admin'){
+      try{sessionStorage.setItem('auth','1')}catch(e){}
+      document.documentElement.classList.remove('locked');
+    }else document.getElementById('login-err').textContent='Invalid username or password';
+  });
+})();
+
 (function(){
   document.querySelectorAll('.mark img').forEach(function(i){
     function ok(){}
