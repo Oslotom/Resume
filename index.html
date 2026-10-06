@@ -125,7 +125,10 @@ h1 .it{display:block;color:var(--fg-2);padding-left:.1em}
 .exp:hover .toggle{background:var(--accent-soft);color:var(--accent)}
 .exp.open .toggle{transform:rotate(180deg)}
 @media (prefers-reduced-motion:reduce){.more,.toggle{transition:none}}
-@media (max-width:900px){.row{grid-template-columns:minmax(0,1fr)}.when{padding-top:0;order:0;flex-direction:row;justify-content:space-between;align-items:center}}
+.edu{gap:14px}
+.edu .row{padding-block:clamp(16px,2.2vw,22px);align-items:center;grid-template-columns:minmax(0,1.7fr) minmax(0,1.3fr) 120px}
+.edu .when{padding-top:0;text-align:right}
+@media (max-width:900px){.row{grid-template-columns:minmax(0,1fr)}.edu .row{grid-template-columns:minmax(0,1fr)}.when{padding-top:0;order:0;flex-direction:row;justify-content:space-between;align-items:center}}
 
 /* Projects: one per row, text left, stat boxes right */
 .projects{display:grid;gap:20px;list-style:none;margin:0;padding:0}
@@ -410,26 +413,26 @@ footer a:hover{color:var(--fg)}
         </div>
         <p class="count"><b>4 programs</b>formal study, exchange abroad and a trade certificate.</p>
       </div>
-      <ol class="cards">
+      <ol class="cards edu">
         <li class="card row" data-reveal>
           <span class="when">2009</span>
           <div><h3 class="title">NUS Singapore</h3><p class="at">Innovation &amp; Entrepreneurship</p></div>
-          <div class="body"><p>Master-level program through Gründerskolen at the University of Oslo, including consulting for OmniGreen Wellness in Singapore.</p><ul class="tags"><li>Master level</li><li>Gründerskolen</li></ul></div>
+          <div class="body"><p>Master-level program through Gründerskolen at the University of Oslo, including consulting for OmniGreen Wellness in Singapore.</p></div>
         </li>
         <li class="card row" data-reveal>
           <span class="when">2008</span>
           <div><h3 class="title">UC Berkeley</h3><p class="at">Innovation &amp; Entrepreneurship</p></div>
-          <div class="body"><p>Exchange semester focused on innovation and entrepreneurship.</p><ul class="tags"><li>Exchange</li></ul></div>
+          <div class="body"><p>Exchange semester focused on innovation and entrepreneurship.</p></div>
         </li>
         <li class="card row" data-reveal>
           <span class="when">2005 — 2008</span>
           <div><h3 class="title">BI Norwegian Business School</h3><p class="at">Bachelor, Business Administration</p></div>
-          <div class="body"><p>Member and sponsorship lead in the business committee and Vinterlekene at BI Nydalen.</p><ul class="tags"><li>Bachelor</li></ul></div>
+          <div class="body"><p>Member and sponsorship lead in the business committee and Vinterlekene at BI Nydalen.</p></div>
         </li>
         <li class="card row" data-reveal>
           <span class="when">2001 — 2003</span>
           <div><h3 class="title">ICT Operations</h3><p class="at">Vocational certificate, Oslo</p></div>
-          <div class="body"><p>Fagbrev i IKT-driftsfag. Military service in Hærens Jegerkommando, the Norwegian Army Ranger Command.</p><ul class="tags"><li>Fagbrev</li><li>Ranger Command</li></ul></div>
+          <div class="body"><p>Fagbrev i IKT-driftsfag. Military service in Hærens Jegerkommando, the Norwegian Army Ranger Command.</p></div>
         </li>
       </ol>
     </div>
